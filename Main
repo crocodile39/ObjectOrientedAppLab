@@ -6,7 +6,7 @@ var speed = 1.5;
 var canJump = true;
 var canResetJump = false;
 
-
+var canShoot = true;
 
 
 //Called once before the first frame
@@ -53,11 +53,21 @@ function Update()
     canResetJump = false;
   }
   
+  if(canShoot && Input.getKey("e"))
+  {
+    canShoot = false;
+    console.log("SHOOOOOOOOT");
+    Wait(2, "Reload");
+  }
   
   
   camera.transform.position.x = player.transform.position.x;
 }
 
+function Reload()
+{
+  canShoot = true;
+}
 
 
 
@@ -506,6 +516,65 @@ Input.getKey = function getKey(key)
   {
     case "q":
       return KeyStates.q;
+    case "w":
+      return KeyStates.w;
+    case "e":
+      return KeyStates.e;
+    case "r":
+      return KeyStates.r;
+    case "t":
+      return KeyStates.t;
+    case "y":
+      return KeyStates.y;
+    case "u":
+      return KeyStates.u;
+    case "i":
+      return KeyStates.i;
+    case "o":
+      return KeyStates.o;
+    case "p":
+      return KeyStates.p;
+    case "a":
+      return KeyStates.a;
+    case "s":
+      return KeyStates.s;
+    case "d":
+      return KeyStates.d;
+    case "f":
+      return KeyStates.f;
+    case "g":
+      return KeyStates.g;
+    case "h":
+      return KeyStates.h;
+    case "j":
+      return KeyStates.j;
+    case "k":
+      return KeyStates.k;
+    case "l":
+      return KeyStates.l;
+    case "z":
+      return KeyStates.z;
+    case "x":
+      return KeyStates.x;
+    case "c":
+      return KeyStates.c;
+    case "v":
+      return KeyStates.v;
+    case "b":
+      return KeyStates.b;
+    case "n":
+      return KeyStates.n;
+    case "m":
+      return KeyStates.m;
+    case "up":
+      return KeyStates.up;
+    case "right":
+      return KeyStates.right;
+    case "down":
+      return KeyStates.down;
+    case "left":
+      return KeyStates.left;
+    
   }
 };
 
@@ -581,6 +650,21 @@ onEvent("screen1", "keyup", function (keys) {
 
 var Color = {black : "black", white: "white", grey: "gray", gray: "gray", red: "red", orange: "orange", yellow: "yellow", green: "green", blue: "blue", indigo: "indigo", violet: "violet"};
 
+//Useful Functions
+function Wait(timeout, functionName)
+{
+  timeout *= 1000;
+  var newLoop = timedLoop(timeout, function(){
+      eval(functionName + "()");
+      stopTimedLoop(newLoop);
+  });
+}
+
+function ForeverLoop(timeout, functionName)
+{
+  timedLoop(timeout * 1000, function(){eval(functionName + "()");});
+}
+//Useful Functions
 
 Start();
 var fixedTime = 1;
