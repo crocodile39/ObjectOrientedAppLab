@@ -21,13 +21,14 @@ function Start()
   player.AddComponent(boxCollider);
   player.tag = "player";
   
-
-  wall = Instantiate("wall", 100, 320, 50, 50, Color.orange);
-  wall.AddComponent(boxCollider);
-  wall.tag = "wall";
   floor = Instantiate("floor", 0, 400, 320, 50, Color.green);
   floor.AddComponent(boxCollider);
   floor.tag = "floor";
+  
+  wall = Instantiate("wall", 100, 320, 50, 50, Color.orange);
+  wall.AddComponent(boxCollider);
+  wall.tag = "wall";
+  
  
 }
 
@@ -66,9 +67,9 @@ function Update()
     bullet.AddComponent(boxCollider);
     bullet.tag = "playerBullet";
     bullet.AddComponent(rigidBody);
-    bullet.Rigidbody.SetVelocity(2 * dir, 0);
+    bullet.Rigidbody.SetVelocity(4 * dir, 0);
     bullet.Rigidbody.useGravity = false;
-    bullet.SetActive(false, 1);
+    bullet.SetActive(false, 0.4);
     Wait(0.5, "Reload");
   }
   
@@ -155,6 +156,7 @@ function Instantiate(name, x, y, width, height, color)
       {
         setPosition(ngo.name, 1000, 1000);
       }
+      UpdateActiveColliders();
     }
     else
     {
@@ -169,6 +171,7 @@ function Instantiate(name, x, y, width, height, color)
           {
             setPosition(ngo.name, 1000, 1000);
           }
+          UpdateActiveColliders();
           stopTimedLoop(newLoop);
       });
     }
@@ -260,11 +263,10 @@ function Instantiate(name, x, y, width, height, color)
             }
           };
         }
+        UpdateActiveColliders();
         break;
     }
   };
-  
-  
   return ngo;
 }
 
@@ -282,14 +284,28 @@ function DrawObject(go)
 
 //PHYSICS HANDLING
 var ActiveColliders = [];
+function UpdateActiveColliders()
+{
+  ActiveColliders = [];
+  for(var i = 0; i < GameObjects.length; i++)
+  {
+    var obj = GameObjects[i];
+    if(obj.active)
+    {
+      if(obj.BoxCollider != null)
+      {
+        appendItem(ActiveColliders, obj);
+      }
+    }
+  }
+}
 
 function ApplyCollisions()
 {
-  for(var i = 0; i < GameObjects.length; i++)
+  for(var i = 0; i < ActiveColliders.length; i++)
   {
-    var go = GameObjects[i];
-    if(go.BoxCollider != null && go.active)
-    {
+    var go = ActiveColliders[i];
+   
       var col1 = go.BoxCollider;
       col1.collisions.up = false;
       col1.collisions.right = false;
@@ -297,17 +313,14 @@ function ApplyCollisions()
       col1.collisions.left = false;
       col1.collisions.count = 0;
       col1.collisions.info = [];
-      for(var j = 0; j < GameObjects.length; j++)
+      for(var j = 0; j < ActiveColliders.length; j++)
       {
-        var go2 = GameObjects[j];
-        if((go.Rigidbody != null || go2.Rigidbody != null) && go2.active )
+        var go2 = ActiveColliders[j];
+        if(go.Rigidbody != null || go2.Rigidbody != null)
         {
-          
-          if(go2.BoxCollider != null && go2 != go)
+          if(i != j)
           {
-           
             var col2 = go2.BoxCollider;
-          // console.log(j);
             if (
                   col1.x <= col2.x + col2.width &&
                   col1.x + col1.width >= col2.x &&
@@ -342,9 +355,10 @@ function ApplyCollisions()
         }
         
       }
-    }
+    
   }
 }
+
 
 var Gravity = 0.04;
 function ApplyGravity()
