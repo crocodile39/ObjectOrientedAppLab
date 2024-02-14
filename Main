@@ -1,0 +1,367 @@
+var player;
+var rb;
+var floor;
+var wall;
+var speed = 2;
+
+function Start()
+{
+  
+  player = Instantiate("player", 50, 50, 50, 50,"red");
+  player.AddComponent(rigidBody);
+  rb = player.Rigidbody;
+  player.AddComponent(boxCollider);
+  
+  wall = Instantiate("wall", 100, 280, 50, 50,"blue");
+  wall.AddComponent(boxCollider);
+  floor = Instantiate("floor", 0, 400, 320, 50,"green");
+  floor.AddComponent(boxCollider);
+
+
+}
+
+function Update()
+{
+  rb.SetVelocity(horizontalInput * speed, rb.velocity.y);
+}
+
+
+
+
+
+
+
+
+//UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY
+
+
+function draw()
+{
+  DetermineInputValues();
+  Update();
+  ApplyCollisions();
+  ApplyGravity();
+  ApplyVelocities();
+  ApplyPositions();
+}
+
+
+
+var GameObjects = [];
+
+var rigidBody = "rigidBody";
+var boxCollider = "boxCollider";
+
+
+function Instantiate(name, x, y, width, height, color)
+{
+  var ngo = {};
+  ngo.name = name;
+  ngo.transform = {};
+
+  
+
+  ngo.transform.position = {x: x, y: y};
+  ngo.transform.scale = {width: width, height: height};
+  ngo.spriteRenderer = {color: color};
+  appendItem(GameObjects, ngo);
+  DrawObject(ngo);
+  
+  ngo.AddComponent = function AddComponent(component)
+  {
+    switch(component)
+    {
+      case rigidBody:
+        if(ngo.Rigidbody != null)
+        {
+          console.log("You have already added a " + component + " to " + ngo.name + ". Do not add more than one");
+        }
+        else
+        {
+          ngo.Rigidbody = {};
+          ngo.Rigidbody.velocity = {x: 0, y: 0};
+          ngo.Rigidbody.useGravity = {gravity: true};
+          ngo.Rigidbody.SetVelocity = function AddComponent(x, y)
+          {
+            if(x != null && y != null)
+            {
+              player.Rigidbody.velocity.x = x;
+              player.Rigidbody.velocity.y = y;
+            }
+            else
+            {
+              console.log("When using Rigidbody.SetVelocity(), you must input a x and y value");
+            }
+          };
+        }
+        break;
+      case boxCollider:
+        if(ngo.BoxCollider != null)
+        {
+          console.log("You have already added a " + component + " to " + ngo.name + ". Do not add more than one");
+        }
+        else
+        {
+          ngo.BoxCollider = {x: ngo.transform.position.x, y: ngo.transform.position.y, width: ngo.transform.scale.width, height: ngo.transform.scale.height};
+          ngo.BoxCollider.collisions = {up: false, right: false, down: false, left: false};
+        }
+        break;
+    }
+  };
+  
+  
+  return ngo;
+}
+
+function DrawObject(go)
+{
+  createCanvas(go.name);
+  setActiveCanvas(go.name);
+  setPosition(go.name,go.transform.position.x, go.transform.position.y);
+  // setStrokeColor(go.spriteRenderer.color);
+  setFillColor(go.spriteRenderer.color);
+  rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+}
+
+function ApplyCollisions()
+{
+  for(var i = 0; i < GameObjects.length; i++)
+  {
+    var go = GameObjects[i];
+    if(go.BoxCollider != null)
+    {
+      var col1 = go.BoxCollider;
+      col1.collisions.up = false;
+      col1.collisions.right = false;
+      col1.collisions.down = false;
+      col1.collisions.left = false;
+      for(var j = 0; j < GameObjects.length; j++)
+      {
+        var go2 = GameObjects[j];
+        if(go2.BoxCollider != null && go2 != go)
+        {
+         
+          var col2 = go2.BoxCollider;
+         
+          if (
+                col1.x <= col2.x + col2.width &&
+                col1.x + col1.width >= col2.x &&
+                col1.y <= col2.y + col2.height &&
+                col1.y + col1.height >= col2.y
+              ) 
+              {
+                if((col2.y + (col2.height / 1.3)) <= col1.y)
+                {
+                  col1.collisions.up = true;
+                }
+                else if((col1.y + (col1.height / 1.3)) <= col2.y)
+                {
+                  col1.collisions.down = true;
+                }
+                else if((col2.x + (col2.width / 1.05)) <= col1.x)
+                {
+                  col1.collisions.left = true;
+                }
+                else if((col1.x + (col1.width)) <= col2.x)
+                {
+                  col1.collisions.right = true;
+                }
+              }
+        }
+      }
+    }
+  }
+}
+
+var Gravity = 0.04;
+function ApplyGravity()
+{
+  for(var i = 0; i < GameObjects.length; i++)
+  {
+    if(GameObjects[i].Rigidbody != null)
+    {
+      var gorb = GameObjects[i].Rigidbody;
+      gorb.SetVelocity(gorb.velocity.x, gorb.velocity.y + Gravity);
+    }
+  }
+}
+
+function ApplyVelocities()
+{
+  for(var i = 0; i < GameObjects.length; i++)
+  {
+    var go = GameObjects[i];
+    if(go.Rigidbody != null)
+    {
+      
+      if(go.BoxCollider.collisions.up && go.Rigidbody.velocity.y < 0)
+      {
+        go.Rigidbody.velocity.y = 0;
+      }
+      if(go.BoxCollider.collisions.right && go.Rigidbody.velocity.x > 0)
+      {
+        go.Rigidbody.velocity.x = 0;
+      }
+      if(go.BoxCollider.collisions.down && go.Rigidbody.velocity.y > 0)
+      {
+        go.Rigidbody.velocity.y = 0;
+      }
+      if(go.BoxCollider.collisions.left && go.Rigidbody.velocity.x < 0)
+      {
+        go.Rigidbody.velocity.x = 0;
+      }
+      
+      go.transform.position.x += go.Rigidbody.velocity.x;
+      go.transform.position.y += go.Rigidbody.velocity.y;
+    }
+  }
+}
+
+function ApplyPositions()
+{
+  for(var i = 0; i < GameObjects.length; i++)
+  {
+    var go = GameObjects[i];
+    setPosition(go.name, go.transform.position.x, go.transform.position.y);
+    var goCol = go.BoxCollider;
+    if(goCol != null)
+    {
+      goCol.x = go.transform.position.x;
+      goCol.y = go.transform.position.y;
+      goCol.width = go.transform.scale.width;
+      goCol.height = go.transform.scale.height;
+    }
+  }
+}
+
+
+
+
+//INPUT HANDLING
+
+var horizontalInput = 0;
+var verticalInput = 0;
+
+var xInput = 0;
+var yInput = 0;
+
+//Engine variables, not for use.
+var heldDownW = false;
+var heldDownS = false;
+var wHeldFirst = true;
+var heldDownD = false;
+var heldDownA = false;
+var dHeldFirst = true;
+
+onEvent("screen1", "keyup", function (keys) {
+  if(keys.key == "w")
+  {
+   heldDownW = false;
+  }
+  else if(keys.key == "s")
+  {
+   heldDownS = false;
+  }
+});
+onEvent("screen1", "keydown", function (keys) {
+  if(keys.key == "w")
+  {
+    if(!heldDownS)
+    {
+      wHeldFirst = true;
+    }
+    else{
+      wHeldFirst = false;
+    }
+    heldDownW = true;
+  }
+  else if(keys.key == "s")
+  {
+    if(!heldDownW)
+    {
+      wHeldFirst = false;
+    }
+     else{
+      wHeldFirst = true;
+    }
+    heldDownS = true;
+  }
+});
+onEvent("screen1", "keyup", function (keys) {
+  if(keys.key == "d")
+  {
+   heldDownD = false;
+  }
+  else if(keys.key == "a")
+  {
+   heldDownA = false;
+  }
+});
+onEvent("screen1", "keydown", function (keys) {
+  if(keys.key == "d")
+  {
+    if(!heldDownA)
+    {
+      dHeldFirst = true;
+    }
+    else{
+      dHeldFirst = false;
+    }
+    heldDownD = true;
+  }
+  else if(keys.key == "a")
+  {
+    if(!heldDownD)
+    {
+      dHeldFirst = false;
+    }
+     else{
+      dHeldFirst = true;
+    }
+    heldDownA = true;
+  }
+});
+
+//Engine Function, not for use.
+function DetermineInputValues()
+{
+  xInput = 0;
+   if(heldDownD)
+  {
+    xInput = 1;
+  }
+  if(heldDownA){
+    xInput = -1;
+  }
+  if(heldDownD && heldDownA && dHeldFirst)
+  {
+    xInput = -1;
+  }
+  if(heldDownD && heldDownA && !dHeldFirst)
+  {
+    xInput = 1;
+  }
+  yInput = 0;
+   if(heldDownW)
+  {
+    yInput = -1;
+  }
+  if(heldDownS){
+    yInput = 1;
+  }
+  if(heldDownW && heldDownS && wHeldFirst)
+  {
+    yInput = 1;
+  }
+  if(heldDownW && heldDownS && !wHeldFirst)
+  {
+    yInput = -1;
+  }
+  
+  horizontalInput = xInput;
+  verticalInput = yInput;
+}
+
+ Start();
+ var fixedTime = 1;
+timedLoop(fixedTime, function(){draw();});
