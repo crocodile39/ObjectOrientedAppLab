@@ -1,3 +1,6 @@
+//Uncomment this function to open up a url to more info:
+// open("https://github.com/crocodile39/ObjectOrientedAppLab/blob/main/Main");
+
 var player;
 var rb;
 var floor;
@@ -12,8 +15,7 @@ var canShoot = true;
 //Called once before the first frame
 function Start()
 {
-  //Call this function in the start function to open up a url to more info:
-  // open("https://github.com/crocodile39/ObjectOrientedAppLab/blob/main/Main");
+ 
   
   player = Instantiate("player", 50, 50, 50, 50, Color.indigo);
   player.AddComponent(rigidBody);
@@ -28,15 +30,32 @@ function Start()
   wall = Instantiate("wall", 100, 320, 50, 50, Color.orange);
   wall.AddComponent(boxCollider);
   wall.tag = "wall";
-  
- 
 }
 
 //Called every frame
 function Update()
 {
-  rb.SetVelocity(horizontalInput * speed, rb.velocity.y);
+  PlayerScript();
+  
+  DestroyBullets();
+  
+  camera.transform.position.x = player.transform.position.x;
+}
 
+function PlayerScript()
+{
+  Movement();
+  Shoot();
+}
+
+function Movement()
+{
+   rb.SetVelocity(horizontalInput * speed, rb.velocity.y);
+   Jumping();
+}
+
+function Jumping()
+{
   if(verticalInput < 0 && canJump && player.BoxCollider.collisions.down)
   {
     rb.velocity.y = 0;
@@ -54,7 +73,10 @@ function Update()
     canJump = true;
     canResetJump = false;
   }
-  
+}
+
+function Shoot()
+{
   if(canShoot && Input.getKey("e"))
   {
     canShoot = false;
@@ -70,16 +92,8 @@ function Update()
     bullet.Rigidbody.SetVelocity(4 * dir, 0);
     bullet.Rigidbody.useGravity = false;
     bullet.SetActive(false, 0.4);
-    Wait(0.5, "Reload");
+    Wait(0.5, "Reload");  
   }
-  
-  var wallHitObj = wall.BoxCollider.collisions.GetTag("playerBullet");
-  if(wallHitObj != null)
-  {
-    wallHitObj.SetActive(false);
-  }
-  
-  camera.transform.position.x = player.transform.position.x;
 }
 
 function Reload()
@@ -87,6 +101,14 @@ function Reload()
   canShoot = true;
 }
 
+function DestroyBullets()
+{
+  var wallHitObj = wall.BoxCollider.collisions.GetTag("playerBullet");
+  if(wallHitObj != null)
+  {
+    wallHitObj.SetActive(false);
+  }
+}
 
 
 
@@ -94,7 +116,6 @@ function Reload()
 
 
 //UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY
-
 
 function draw()
 {
@@ -111,6 +132,13 @@ function draw()
   ApplyPositions();
 }
 
+function slowDraw()
+{
+  if(turnOffNonVisible)
+  {
+    TurnOffNonVisible();
+  }
+}
 
 //GAMEOBJECT HANDLING
 var GameObjects = [];
@@ -240,6 +268,7 @@ function Instantiate(name, x, y, width, height, color)
           ngo.BoxCollider.collisions = {up: false, right: false, down: false, left: false};
           ngo.BoxCollider.collisions.count = {};
           ngo.BoxCollider.collisions.info = [];
+          ngo.BoxCollider.active = true;
           ngo.BoxCollider.collisions.CompareTag = function CompareTag(tag)
           {
             for(var curcol = 0; curcol < ngo.BoxCollider.collisions.info.length; curcol++)
@@ -294,7 +323,10 @@ function UpdateActiveColliders()
     {
       if(obj.BoxCollider != null)
       {
-        appendItem(ActiveColliders, obj);
+        if(obj.BoxCollider.active)
+        {
+          appendItem(ActiveColliders, obj);  
+        }
       }
     }
   }
@@ -649,7 +681,6 @@ Input.getKey = function getKey(key)
 
 var KeyStates = {q: false, w: false, e: false,r: false,t: false,y: false,u: false,i: false,o: false,p: false,a: false,s: false,d: false,f: false,g: false,h: false,j: false,k: false,l: false,z: false,x: false,c: false,v: false,b: false,n: false,m: false, up: false, right: false, down: false, left: false};
 
-
 onEvent("screen1", "keydown", function (keys) {
   KeyStates.q = keys.key == "q";
   KeyStates.w = keys.key == "w";
@@ -720,6 +751,8 @@ onEvent("screen1", "keyup", function (keys) {
 var Color = {black : "black", white: "white", grey: "gray", gray: "gray", red: "red", orange: "orange", yellow: "yellow", green: "green", blue: "blue", indigo: "indigo", violet: "violet"};
 
 //Optional Functions
+
+//Whether or not to update colors every frame
 var updateColors = false;
 function UpdateColors()
 {
@@ -734,6 +767,29 @@ function UpdateColors()
   }
 }
 
+//Turn off colliders when they are off screen, then turn them back on when they are on screen again
+var turnOffNonVisible = true;
+function TurnOffNonVisible()
+{
+  for(var i = 0; i < GameObjects.length; i++)
+  {
+    var go = GameObjects[i];
+    if(go != camera)
+    {
+      if(DistanceBetween(go, camera) > 450)
+      {
+        go.BoxCollider.active = false;  
+      }
+      else
+      {
+        go.BoxCollider.active = true;  
+      }
+    }
+    UpdateActiveColliders();
+  }
+}
+
+//Optional Functions
 
 //Useful Functions
 function Wait(timeout, functionName)
@@ -749,8 +805,32 @@ function ForeverLoop(timeout, functionName)
 {
   timedLoop(timeout * 1000, function(){eval(functionName + "()");});
 }
+
+function DistanceBetween(go1, go2)
+{
+  if(go1 != null && go2 != null)
+  {
+    var x1 = go1.transform.position.x + (go1.transform.scale.width / 2);
+    var x2 = go2.transform.position.x + (go2.transform.scale.width / 2);
+    var y1 = go1.transform.position.y + (go1.transform.scale.height / 2);
+    var y2 = go2.transform.position.y + (go2.transform.scale.height / 2);
+    
+    var xdist = Math.abs(x1 - x2);
+    var ydist = Math.abs(y1 - y2);
+    var xsqr = xdist * xdist;
+    var ysqr = ydist * ydist;
+    
+    var xdyd = xsqr + ysqr;
+    
+    var sqrtxy = Math.sqrt(xdyd);
+    
+    return sqrtxy;
+  }
+}
 //Useful Functions
 
 Start();
 var fixedTime = 1;
 timedLoop(fixedTime, function(){draw();});
+var slowTime = 100;
+timedLoop(slowTime, function(){slowDraw();});
