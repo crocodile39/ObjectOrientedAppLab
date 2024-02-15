@@ -15,47 +15,47 @@ var canShoot = true;
 //Called once before the first frame
 function Start()
 {
- 
-  
+  CreateScripts(["DestroyBullets", "PlayerScript", "EnemyScript"]);
+
+  floor = Instantiate("floor", 0, 400, 320, 50, Color.green);
+  floor.AddComponent(boxCollider);
+  floor.tag = "floor";
+  floor.AddComponent(script, "DestroyBullets");
+
+  var leftFloor = Instantiate("leftFloor", -320, 400, 320, 50, Color.green);
+  leftFloor.AddComponent(boxCollider);
+  leftFloor.tag = "floor";
+  leftFloor .AddComponent(script, "DestroyBullets");
+
   player = Instantiate("player", 50, 50, 50, 50, Color.indigo);
   player.AddComponent(rigidBody);
   rb = player.Rigidbody;
   player.AddComponent(boxCollider);
   player.tag = "player";
+  player.AddComponent(script, "PlayerScript");
   
-  floor = Instantiate("floor", 0, 400, 320, 50, Color.green);
-  floor.AddComponent(boxCollider);
-  floor.tag = "floor";
-  
-  wall = Instantiate("wall", 100, 320, 50, 50, Color.orange);
-  wall.AddComponent(boxCollider);
-  wall.tag = "wall";
+  var enemy = Instantiate("enemy", 200, 50, 50, 50, Color.red);
+  enemy.AddComponent(rigidBody);
+  enemy.AddComponent(boxCollider);
+  enemy.tag = "enemy";
+  enemy.AddComponent(script, "EnemyScript");
+  enemy.variables.right = false;
+  enemy.variables.changeDir = false;
+  enemy.variables.calledChange = false;
+  enemy.variables.changeTime = 2;
+  enemy.variables.speed = 0.3;
 }
 
 //Called every frame
 function Update()
 {
-  PlayerScript();
-  
-  DestroyBullets();
-  
   camera.transform.position.x = player.transform.position.x;
 }
 
 function PlayerScript()
 {
-  Movement();
-  Shoot();
-}
-
-function Movement()
-{
-   rb.SetVelocity(horizontalInput * speed, rb.velocity.y);
-   Jumping();
-}
-
-function Jumping()
-{
+  rb.SetVelocity(horizontalInput * speed, rb.velocity.y);
+   
   if(verticalInput < 0 && canJump && player.BoxCollider.collisions.down)
   {
     rb.velocity.y = 0;
@@ -73,10 +73,7 @@ function Jumping()
     canJump = true;
     canResetJump = false;
   }
-}
-
-function Shoot()
-{
+  
   if(canShoot && Input.getKey("e"))
   {
     canShoot = false;
@@ -91,6 +88,7 @@ function Shoot()
     bullet.AddComponent(rigidBody);
     bullet.Rigidbody.SetVelocity(4 * dir, 0);
     bullet.Rigidbody.useGravity = false;
+    // bullet.transform.Move(3 * dir, 0);
     bullet.SetActive(false, 0.4);
     Wait(0.5, "Reload");  
   }
@@ -101,17 +99,52 @@ function Reload()
   canShoot = true;
 }
 
-function DestroyBullets()
+function DestroyBullets(index)
 {
-  var wallHitObj = wall.BoxCollider.collisions.GetTag("playerBullet");
-  if(wallHitObj != null)
+  var wallHitObj = GameObjects[index].BoxCollider.collisions.GetTag("playerBullet");
+  if(wallHitObj != null && GameObjects[index].variables.use)
   {
     wallHitObj.SetActive(false);
   }
 }
 
-
-
+function EnemyScript(index)
+{
+  var enemy = GameObjects[index];
+  var erb = enemy.Rigidbody;
+  if(enemy.variables.right)
+  {
+    erb.SetVelocity(enemy.variables.speed, erb.velocity.y);
+  }
+  else
+  {
+     erb.SetVelocity(-enemy.variables.speed, erb.velocity.y);
+  }
+  if(enemy.variables.changeDir)
+  {
+    enemy.variables.changeDir = false;
+    enemy.variables.right = !enemy.variables.right;
+  }
+  else
+  {
+    if(!enemy.variables.calledChange)
+    {
+      enemy.variables.calledChange = true;
+      var newLoop = timedLoop(enemy.variables.changeTime * 1000, function(){
+      enemy.variables.changeDir = true;
+      enemy.variables.calledChange = false;
+      stopTimedLoop(newLoop);
+      });
+    }
+  }
+  
+  var bulletHit = enemy.BoxCollider.collisions.GetTag("playerBullet");
+  if(bulletHit != null)
+  {
+    enemy.SetActive(false);
+    bulletHit.SetActive(false);
+  }
+}
 
 
 
@@ -121,6 +154,7 @@ function draw()
 {
   DetermineInputValues();
   Update();
+  CheckScripts();
   if(updateColors)
   {
     UpdateColors();
@@ -129,6 +163,7 @@ function draw()
   ApplyCollisions();
   ApplyGravity();
   ApplyVelocities();
+  ApplyMoves();
   ApplyPositions();
 }
 
@@ -142,9 +177,11 @@ function slowDraw()
 
 //GAMEOBJECT HANDLING
 var GameObjects = [];
+var Scripts = [];
 
 var rigidBody = "rigidBody";
 var boxCollider = "boxCollider";
+var script = "script";
 
 
 function Instantiate(name, x, y, width, height, color)
@@ -167,9 +204,19 @@ function Instantiate(name, x, y, width, height, color)
     height = 450;
   }
   ngo.transform.scale = {width: width, height: height};
+  ngo.transform.position.direction = {x: 0, y: 0};
+  ngo.transform.Move = function Move(x,y)
+  {
+    ngo.transform.position.direction.x = x;
+    ngo.transform.position.direction.y = y;
+  };
+  
+  
   ngo.spriteRenderer = {color: color};
   appendItem(GameObjects, ngo);
   DrawObject(ngo);
+  ngo.variables = {};
+  
   
   ngo.SetActive =  function SetActive(on, time)
   {
@@ -205,7 +252,7 @@ function Instantiate(name, x, y, width, height, color)
     }
   };
   
-  ngo.AddComponent = function AddComponent(component)
+  ngo.AddComponent = function AddComponent(component, info)
   {
     switch(component)
     {
@@ -294,9 +341,29 @@ function Instantiate(name, x, y, width, height, color)
         }
         UpdateActiveColliders();
         break;
+      case "script":
+        for(var scr = 0; scr < Scripts.length; scr++)
+        {
+          if(Scripts[scr].name == info)
+          {
+            appendItem(Scripts[scr].objects, FindGameObjectIndex(ngo));
+          }
+        }
+        break;
     }
   };
   return ngo;
+}
+
+function FindGameObjectIndex(go)
+{
+  for(var i = 0; i < GameObjects.length; i++)
+  {
+    if(GameObjects[i].name == go.name)
+    {
+      return i;
+    }
+  }
 }
 
 function DrawObject(go)
@@ -308,6 +375,38 @@ function DrawObject(go)
   // setStrokeColor(go.spriteRenderer.color);
   setFillColor(go.spriteRenderer.color);
   rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+}
+
+//SCRIPTS
+function CreateScript(info)
+{
+  var newScript = {};
+  newScript.name = info;
+  newScript.objects = [];
+  appendItem(Scripts, newScript);
+}
+
+function CreateScripts(info)
+{
+  for(var i = 0; i < info.length; i++)
+  {
+    var newScript = {};
+    newScript.name = info[i];
+    newScript.objects = [];
+    appendItem(Scripts, newScript);
+  }
+}
+
+function CheckScripts()
+{
+  for(var i = 0; i < Scripts.length; i++)
+  {
+    for(var j = 0; j < Scripts[i].objects.length; j++)
+    {
+      var str = "(" + Scripts[i].objects[j] + ")";
+      eval(Scripts[i].name + str);
+    }
+  }
 }
 
 
@@ -442,6 +541,22 @@ function ApplyVelocities()
   }
 }
 
+function ApplyMoves()
+{
+  for(var i = 0; i < GameObjects.length; i++)
+  {
+    var go = GameObjects[i];
+    if(go.transform.position.direction.x != 0)
+    {
+      go.transform.position.x += go.transform.position.direction.x;
+    }
+    if(go.transform.position.direction.y != 0)
+    {
+       go.transform.position.y += go.transform.position.direction.y;
+    }
+  }
+}
+
 function ApplyPositions()
 {
   for(var i = 0; i < GameObjects.length; i++)
@@ -462,6 +577,9 @@ function ApplyPositions()
     
   }
 }
+
+
+
 
 //CAMERA
 var cameraOffset = {x: 160, y: 200};
