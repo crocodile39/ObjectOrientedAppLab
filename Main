@@ -6,19 +6,19 @@ function Start()
 {
   CreateScripts(["DestroyBullets", "PlayerScript", "EnemyScript"]);
 
-  var floor = Instantiate("floor", 0, 400, 320, 50, Color.green);
-  {
-    floor.AddComponent(boxCollider);
-    floor.tag = "floor";
-    floor.AddComponent(script, "DestroyBullets");
-  }
+  // var floor = Instantiate("floor", 0, 400, 320, 50, Color.green);
+  // {
+  //   floor.AddComponent(boxCollider);
+  //   floor.tag = "floor";
+  //   floor.AddComponent(script, "DestroyBullets");
+  // }
   
-  var leftFloor = Instantiate("leftFloor", -320, 400, 320, 50, Color.green);
-  {
-    leftFloor.AddComponent(boxCollider);
-    leftFloor.tag = "floor";
-    leftFloor.AddComponent(script, "DestroyBullets");
-  }
+  // var leftFloor = Instantiate("leftFloor", -320, 400, 320, 50, Color.green);
+  // {
+  //   leftFloor.AddComponent(boxCollider);
+  //   leftFloor.tag = "floor";
+  //   leftFloor.AddComponent(script, "DestroyBullets");
+  // }
   
   var player = Instantiate("player", 50, 50, 50, 50, Color.indigo);
   {
@@ -34,31 +34,20 @@ function Start()
     player.variables.reloading = false;
   }
  
-  var enemy = Instantiate("enemy", 200, 50, 50, 50, Color.red);
-  {
-    enemy.AddComponent(rigidBody);
-    enemy.AddComponent(boxCollider);
-    enemy.tag = "enemy";
-    enemy.AddComponent(script, "EnemyScript");
-    enemy.variables.right = false;
-    enemy.variables.changeDir = false;
-    enemy.variables.calledChange = false;
-    enemy.variables.changeTime = 2;
-    enemy.variables.speed = 0.3;
-  }
+  // var enemy = Instantiate("enemy", 200, 50, 50, 50, Color.red);
+  // {
+  //   enemy.AddComponent(rigidBody);
+  //   enemy.AddComponent(boxCollider);
+  //   enemy.tag = "enemy";
+  //   enemy.AddComponent(script, "EnemyScript");
+  //   enemy.variables.right = false;
+  //   enemy.variables.changeDir = false;
+  //   enemy.variables.calledChange = false;
+  //   enemy.variables.changeTime = 2;
+  //   enemy.variables.speed = 0.3;
+  // }
   
-  var enemy2 = Instantiate("enemy", -200, 50, 50, 50, Color.yellow);
-  {
-    enemy2.AddComponent(rigidBody);
-    enemy2.AddComponent(boxCollider);
-    enemy2.tag = "enemy";
-    enemy2.AddComponent(script, "EnemyScript");
-    enemy2.variables.right = false;
-    enemy2.variables.changeDir = false;
-    enemy2.variables.calledChange = false;
-    enemy2.variables.changeTime = 2;
-    enemy2.variables.speed = 0.3;
-  }
+  InstantiateString("--__ _+_ __ + _ -_+_>_", Color.violet);
 }
 
 
@@ -395,6 +384,42 @@ function InstantiateStatic(x, y, width, height, color)
   setPosition(name,x, y);
   setFillColor(color);
   rect(0, 0, width, height);
+}
+
+function InstantiateString(map, color)
+{
+  var chars = map.split('');
+  var x = 0;
+  var y = 200;
+  var width = 200;
+  var height = 50;
+  var col = (color == null ? Color.green : color);
+  for(var i =0; i < chars.length; i++)
+  {
+    switch(chars[i])
+    {
+      case "_":
+        var ifloor = Instantiate("floor", x, y, width, height, col);
+        ifloor.AddComponent(boxCollider);
+        ifloor.tag = "floor";
+        x += width;
+        break;
+      case " ":
+        x += (width / 2);
+        break;
+      case ">":
+        x += (width / 2);
+        break;
+      case "<":
+        x -= (width / 2);
+        break;
+      case "+":
+        y -= height;
+        break;
+      case "-":
+        y += height;
+    }
+  }
 }
 
 function FindGameObjectIndex(go)
