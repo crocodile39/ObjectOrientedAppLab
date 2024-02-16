@@ -952,7 +952,7 @@ function Update()
         for(var i = 0; i < GameObjects.length; i++)
         {
           var go = GameObjects[i];
-          if(go != camera)
+          if(go != camera && go.BoxCollider != null)
           {
             if(DistanceBetween(go, camera) > cameraTurnOffDistance)
             {
