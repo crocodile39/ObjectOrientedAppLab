@@ -4,14 +4,16 @@
 //Called once before the first frame
 function Start()
 {
- 
+
 }
+
 
 //Called every frame
 function Update()
 {
   
 }
+
 
 //Game Engine
 {
@@ -1012,6 +1014,102 @@ function Update()
     function SetBackground(color)
     {
       setProperty("screen1", "background-color", color);
+    }
+    
+    //Creates a simple player object
+    function CreatePlayer()
+    {
+      var simplePlayer = Instantiate("simplePlayer", 50, 50, 50, 50, Color.blue);
+      {
+        CreateScript("SimplePlayerScript");
+        simplePlayer.AddComponent(rigidBody);
+        simplePlayer.AddComponent(boxCollider);
+        simplePlayer.tag = "player";
+        simplePlayer.AddComponent(script, "SimplePlayerScript");
+        simplePlayer.variables.speed = 1.5;
+        simplePlayer.variables.jump = 2.7;
+        simplePlayer.variables.canJump = true;
+        simplePlayer.variables.canResetJump = false;
+        simplePlayer.variables.canShoot = true;
+        simplePlayer.variables.reloading = false;
+      }
+    }
+    //Used by CreatePlayer()
+    function SimplePlayerScript(index)
+    {
+      var simplePlayer = GameObjects[index];
+      var simplerb = simplePlayer.Rigidbody;
+      simplerb.SetVelocity(horizontalInput * simplePlayer.variables.speed, simplerb.velocity.y);
+       
+      if(verticalInput < 0 &&  simplePlayer.variables.canJump && simplePlayer.BoxCollider.collisions.down)
+      {
+        simplerb.velocity.y = 0;
+        simplerb.AddForce(0, simplePlayer.variables.jump);
+        simplePlayer.variables.canJump = false;
+        simplePlayer.variables.canResetJump = false;
+      }
+      if(!simplePlayer.BoxCollider.collisions.down)
+      {
+        simplePlayer.variables.canResetJump = true;
+      }
+    
+      if(simplePlayer.BoxCollider.collisions.down && simplePlayer.variables.canResetJump)
+      {
+        simplePlayer.variables.canJump = true;
+        simplePlayer.variables.canResetJump = false;
+      }
+      
+      camera.transform.position.x = simplePlayer.transform.position.x;
+    }
+    
+    //Creates a simple enemy object
+    function CreateEnemy()
+    {
+       var enemy = Instantiate("enemy", 200, 50, 50, 50, Color.red);
+      {
+        CreateScript("SimpleEnemyScript");
+        enemy.AddComponent(rigidBody);
+        enemy.AddComponent(boxCollider);
+        enemy.tag = "enemy";
+        enemy.AddComponent(script, "SimpleEnemyScript");
+        enemy.variables.right = false;
+        enemy.variables.changeDir = false;
+        enemy.variables.calledChange = false;
+        enemy.variables.changeTime = 2;
+        enemy.variables.speed = 0.3;
+      }
+    }
+    
+    //Used by CreateEnemy()
+    function SimpleEnemyScript(index)
+    {
+      var simpleEnemy = GameObjects[index];
+      var simpleerb = simpleEnemy.Rigidbody;
+      if(simpleEnemy.variables.right)
+      {
+        simpleerb.SetVelocity(simpleEnemy.variables.speed, simpleerb.velocity.y);
+      }
+      else
+      {
+         simpleerb.SetVelocity(-simpleEnemy.variables.speed, simpleerb.velocity.y);
+      }
+      if(simpleEnemy.variables.changeDir)
+      {
+        simpleEnemy.variables.changeDir = false;
+        simpleEnemy.variables.right = !simpleEnemy.variables.right;
+      }
+      else
+      {
+        if(!simpleEnemy.variables.calledChange)
+        {
+          simpleEnemy.variables.calledChange = true;
+          var newLoop = timedLoop(simpleEnemy.variables.changeTime * 1000, function(){
+          simpleEnemy.variables.changeDir = true;
+          simpleEnemy.variables.calledChange = false;
+          stopTimedLoop(newLoop);
+          });
+        }
+      }
     }
   }
   
