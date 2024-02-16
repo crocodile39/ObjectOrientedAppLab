@@ -1,82 +1,101 @@
 //Uncomment this function to open up a url to more info:
 // open("https://github.com/crocodile39/ObjectOrientedAppLab/blob/main/Main");
 
-var player;
-var rb;
-var floor;
-var wall;
-var speed = 1.5;
-var canJump = true;
-var canResetJump = false;
-
-var canShoot = true;
-
-
 //Called once before the first frame
 function Start()
 {
   CreateScripts(["DestroyBullets", "PlayerScript", "EnemyScript"]);
 
-  floor = Instantiate("floor", 0, 400, 320, 50, Color.green);
-  floor.AddComponent(boxCollider);
-  floor.tag = "floor";
-  floor.AddComponent(script, "DestroyBullets");
-
-  var leftFloor = Instantiate("leftFloor", -320, 400, 320, 50, Color.green);
-  leftFloor.AddComponent(boxCollider);
-  leftFloor.tag = "floor";
-  leftFloor .AddComponent(script, "DestroyBullets");
-
-  player = Instantiate("player", 50, 50, 50, 50, Color.indigo);
-  player.AddComponent(rigidBody);
-  rb = player.Rigidbody;
-  player.AddComponent(boxCollider);
-  player.tag = "player";
-  player.AddComponent(script, "PlayerScript");
+  var floor = Instantiate("floor", 0, 400, 320, 50, Color.green);
+  {
+    floor.AddComponent(boxCollider);
+    floor.tag = "floor";
+    floor.AddComponent(script, "DestroyBullets");
+  }
   
+  var leftFloor = Instantiate("leftFloor", -320, 400, 320, 50, Color.green);
+  {
+    leftFloor.AddComponent(boxCollider);
+    leftFloor.tag = "floor";
+    leftFloor.AddComponent(script, "DestroyBullets");
+  }
+  
+  var player = Instantiate("player", 50, 50, 50, 50, Color.indigo);
+  {
+    player.AddComponent(rigidBody);
+    player.AddComponent(boxCollider);
+    player.tag = "player";
+    player.AddComponent(script, "PlayerScript");
+    player.variables.speed = 1.5;
+    player.variables.jump = 2.7;
+    player.variables.canJump = true;
+    player.variables.canResetJump = false;
+    player.variables.canShoot = true;
+    player.variables.reloading = false;
+  }
+ 
   var enemy = Instantiate("enemy", 200, 50, 50, 50, Color.red);
-  enemy.AddComponent(rigidBody);
-  enemy.AddComponent(boxCollider);
-  enemy.tag = "enemy";
-  enemy.AddComponent(script, "EnemyScript");
-  enemy.variables.right = false;
-  enemy.variables.changeDir = false;
-  enemy.variables.calledChange = false;
-  enemy.variables.changeTime = 2;
-  enemy.variables.speed = 0.3;
+  {
+    enemy.AddComponent(rigidBody);
+    enemy.AddComponent(boxCollider);
+    enemy.tag = "enemy";
+    enemy.AddComponent(script, "EnemyScript");
+    enemy.variables.right = false;
+    enemy.variables.changeDir = false;
+    enemy.variables.calledChange = false;
+    enemy.variables.changeTime = 2;
+    enemy.variables.speed = 0.3;
+  }
+  
+  var enemy2 = Instantiate("enemy", -200, 50, 50, 50, Color.yellow);
+  {
+    enemy2.AddComponent(rigidBody);
+    enemy2.AddComponent(boxCollider);
+    enemy2.tag = "enemy";
+    enemy2.AddComponent(script, "EnemyScript");
+    enemy2.variables.right = false;
+    enemy2.variables.changeDir = false;
+    enemy2.variables.calledChange = false;
+    enemy2.variables.changeTime = 2;
+    enemy2.variables.speed = 0.3;
+  }
 }
+
+
 
 //Called every frame
 function Update()
 {
-  camera.transform.position.x = player.transform.position.x;
+  
 }
 
-function PlayerScript()
+function PlayerScript(index)
 {
-  rb.SetVelocity(horizontalInput * speed, rb.velocity.y);
+  var player = GameObjects[index];
+  var rb = player.Rigidbody;
+  rb.SetVelocity(horizontalInput * player.variables.speed, rb.velocity.y);
    
-  if(verticalInput < 0 && canJump && player.BoxCollider.collisions.down)
+  if(verticalInput < 0 &&  player.variables.canJump && player.BoxCollider.collisions.down)
   {
     rb.velocity.y = 0;
-    rb.AddForce(0, 2.7);
-    canJump = false;
-    canResetJump = false;
+    rb.AddForce(0, player.variables.jump);
+    player.variables.canJump = false;
+    player.variables.canResetJump = false;
   }
   if(!player.BoxCollider.collisions.down)
   {
-    canResetJump = true;
+    player.variables.canResetJump = true;
   }
 
-  if(player.BoxCollider.collisions.down && canResetJump)
+  if(player.BoxCollider.collisions.down && player.variables.canResetJump)
   {
-    canJump = true;
-    canResetJump = false;
+    player.variables.canJump = true;
+    player.variables.canResetJump = false;
   }
   
-  if(canShoot && Input.getKey("e"))
+  if(player.variables.canShoot && Input.getKey("e"))
   {
-    canShoot = false;
+    player.variables.canShoot = false;
     var dir = horizontalInput;
     if(dir == 0)
     {
@@ -88,15 +107,24 @@ function PlayerScript()
     bullet.AddComponent(rigidBody);
     bullet.Rigidbody.SetVelocity(4 * dir, 0);
     bullet.Rigidbody.useGravity = false;
-    // bullet.transform.Move(3 * dir, 0);
     bullet.SetActive(false, 0.4);
-    Wait(0.5, "Reload");  
+    if(!player.variables.reloading)
+    {
+      player.variables.reloading = true;
+      Reload(0.5, player);  
+    }
   }
+  camera.transform.position.x = player.transform.position.x;
 }
 
-function Reload()
+function Reload(time, player)
 {
-  canShoot = true;
+  time *= 1000;
+  var newLoop = timedLoop(time, function(){
+    player.variables.canShoot = true;
+    player.variables.reloading = false;
+    stopTimedLoop(newLoop);
+  });
 }
 
 function DestroyBullets(index)
@@ -150,6 +178,7 @@ function EnemyScript(index)
 
 //UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY
 
+
 function draw()
 {
   DetermineInputValues();
@@ -182,6 +211,8 @@ var Scripts = [];
 var rigidBody = "rigidBody";
 var boxCollider = "boxCollider";
 var script = "script";
+
+var StaticGameObjects = [];
 
 
 function Instantiate(name, x, y, width, height, color)
@@ -355,6 +386,17 @@ function Instantiate(name, x, y, width, height, color)
   return ngo;
 }
 
+function InstantiateStatic(x, y, width, height, color)
+{
+  var name = "staticObject" + randomNumber(0, 100000);
+  appendItem(StaticGameObjects, name);
+  createCanvas(name);
+  setActiveCanvas(name);
+  setPosition(name,x, y);
+  setFillColor(color);
+  rect(0, 0, width, height);
+}
+
 function FindGameObjectIndex(go)
 {
   for(var i = 0; i < GameObjects.length; i++)
@@ -403,8 +445,11 @@ function CheckScripts()
   {
     for(var j = 0; j < Scripts[i].objects.length; j++)
     {
-      var str = "(" + Scripts[i].objects[j] + ")";
-      eval(Scripts[i].name + str);
+      if(GameObjects[Scripts[i].objects[j]].active)
+      {
+        var str = "(" + Scripts[i].objects[j] + ")";
+        eval(Scripts[i].name + str);
+      }
     }
   }
 }
@@ -597,7 +642,14 @@ function ApplyCameraPosition()
       go.transform.position.y -= camera.transform.position.y;
       go.transform.position.y += cameraOffset.y;
     }
-    
+  }
+  for(var j = 0; j < StaticGameObjects.length; j++)
+  {
+    var sgo = StaticGameObjects[j];
+    if(sgo != camera)
+    {
+      setPosition(sgo, getProperty(sgo, "x") - camera.transform.position.x +  cameraOffset.x, getProperty(sgo, "y") - camera.transform.position.y +  cameraOffset.y);
+    }
   }
 }
 
