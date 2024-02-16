@@ -4,6 +4,8 @@
 //Called once before the first frame
 function Start()
 {
+  SetBackground(Color.grey);
+  
   CreateScripts(["DestroyBullets", "PlayerScript", "EnemyScript"]);
 
   // var floor = Instantiate("floor", 0, 400, 320, 50, Color.green);
@@ -47,7 +49,7 @@ function Start()
   //   enemy.variables.speed = 0.3;
   // }
   
-  InstantiateString("--__ _+_ __ + _ -_+_>_", Color.violet);
+  InstantiateString("-_r +_rrddd");
 }
 
 
@@ -55,7 +57,6 @@ function Start()
 //Called every frame
 function Update()
 {
-  
 }
 
 function PlayerScript(index)
@@ -164,6 +165,7 @@ function EnemyScript(index)
 }
 
 
+//Example games: Maze, parkour, small fighter, catch falling things.
 
 //UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY
 
@@ -391,7 +393,7 @@ function InstantiateString(map, color)
   var chars = map.split('');
   var x = 0;
   var y = 200;
-  var width = 200;
+  var width = 160;
   var height = 50;
   var col = (color == null ? Color.green : color);
   for(var i =0; i < chars.length; i++)
@@ -418,6 +420,64 @@ function InstantiateString(map, color)
         break;
       case "-":
         y += height;
+        break;
+      case "d":
+        for(var j = 0; j < i; j++)
+        {
+          switch(chars[j])
+          {
+            case "_":
+              var ifloor2 = Instantiate("floor", x, y, width, height, col);
+              ifloor2.AddComponent(boxCollider);
+              ifloor2.tag = "floor";
+              x += width;
+              break;
+            case " ":
+              x += (width / 2);
+              break;
+            case ">":
+              x += (width / 2);
+              break;
+            case "<":
+              x -= (width / 2);
+              break;
+            case "+":
+              y -= height;
+              break;
+            case "-":
+              y += height;
+              break;
+          }
+        }
+        break;
+      case "r":
+        var possibleChars = ["_", " ", ">", "<", "+", "-"];
+        var randomChar = possibleChars[randomNumber(0, possibleChars.length - 1)];
+        switch(randomChar)
+        {
+          case "_":
+            var ifloor3 = Instantiate("floor", x, y, width, height, col);
+            ifloor3.AddComponent(boxCollider);
+            ifloor3.tag = "floor";
+            x += width;
+            break;
+          case " ":
+            x += (width / 2);
+            break;
+          case ">":
+            x += (width / 2);
+            break;
+          case "<":
+            x -= (width / 2);
+            break;
+          case "+":
+            y -= height;
+            break;
+          case "-":
+            y += height;
+            break;
+          }
+        break;
     }
   }
 }
@@ -479,6 +539,16 @@ function CheckScripts()
   }
 }
 
+//UI HANDLING
+function CreateText(name, text, x, y, color)
+{
+  var element = name + randomNumber(0,100000);
+  textLabel(element, text);
+  setProperty(element, "x", x);
+  setProperty(element, "y", y);
+  setProperty(element, "text-color", color);
+  return element;
+}
 
 //PHYSICS HANDLING
 var ActiveColliders = [];
@@ -678,6 +748,10 @@ function ApplyCameraPosition()
   }
 }
 
+function SetBackground(color)
+{
+  setProperty("screen1", "background-color", color);
+}
 
 
 //INPUT HANDLING
@@ -964,6 +1038,7 @@ function UpdateColors()
 
 //Turn off colliders when they are off screen, then turn them back on when they are on screen again
 var turnOffNonVisible = true;
+var cameraTurnOffDistance = 250;
 function TurnOffNonVisible()
 {
   for(var i = 0; i < GameObjects.length; i++)
@@ -971,7 +1046,7 @@ function TurnOffNonVisible()
     var go = GameObjects[i];
     if(go != camera)
     {
-      if(DistanceBetween(go, camera) > 450)
+      if(DistanceBetween(go, camera) > cameraTurnOffDistance)
       {
         go.BoxCollider.active = false;  
       }
@@ -984,7 +1059,7 @@ function TurnOffNonVisible()
   }
 }
 
-//Optional Functions
+
 
 //Useful Functions
 function Wait(timeout, functionName)
