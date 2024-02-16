@@ -13,6 +13,7 @@ function Start()
   //   floor.AddComponent(boxCollider);
   //   floor.tag = "floor";
   //   floor.AddComponent(script, "DestroyBullets");
+  //   floor.staticPosition = true;
   // }
   
   // var leftFloor = Instantiate("leftFloor", -320, 400, 320, 50, Color.green);
@@ -49,7 +50,7 @@ function Start()
   //   enemy.variables.speed = 0.3;
   // }
   
-  InstantiateString("-_r +_rrddd");
+  InstantiateString("-_r +_rrdd");
 }
 
 
@@ -167,98 +168,162 @@ function EnemyScript(index)
 
 //Example games: Maze, parkour, small fighter, catch falling things.
 
-//UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY UNITY
-
-
-function draw()
+//Game Engine
 {
-  DetermineInputValues();
-  Update();
-  CheckScripts();
-  if(updateColors)
+  //Usable Variables
   {
-    UpdateColors();
-  }
-  ApplyCameraPosition();
-  ApplyCollisions();
-  ApplyGravity();
-  ApplyVelocities();
-  ApplyMoves();
-  ApplyPositions();
-}
-
-function slowDraw()
-{
-  if(turnOffNonVisible)
-  {
-    TurnOffNonVisible();
-  }
-}
-
-//GAMEOBJECT HANDLING
-var GameObjects = [];
-var Scripts = [];
-
-var rigidBody = "rigidBody";
-var boxCollider = "boxCollider";
-var script = "script";
-
-var StaticGameObjects = [];
-
-
-function Instantiate(name, x, y, width, height, color)
-{
-  var ngo = {};
-  ngo.name = name;
-  ngo.tag = "default";
-  ngo.active = true;
-  ngo.transform = {};
-  
-  ngo.transform.position = {x: x, y: y};
-  if(width > 320)
-  {
-    console.log("When instantiating, width cannot be greater than 320");
-    width = 320;
-  }
-  if(height > 450)
-  {
-    console.log("When instantiating, heigh cannot be greater than 450");
-    height = 450;
-  }
-  ngo.transform.scale = {width: width, height: height};
-  ngo.transform.position.direction = {x: 0, y: 0};
-  ngo.transform.Move = function Move(x,y)
-  {
-    ngo.transform.position.direction.x = x;
-    ngo.transform.position.direction.y = y;
-  };
-  
-  
-  ngo.spriteRenderer = {color: color};
-  appendItem(GameObjects, ngo);
-  DrawObject(ngo);
-  ngo.variables = {};
-  
-  
-  ngo.SetActive =  function SetActive(on, time)
-  {
-    if(time == null)
+    var Color = {black : "black", white: "white", grey: "gray", gray: "gray", red: "red", orange: "orange", yellow: "yellow", green: "green", blue: "blue", indigo: "indigo", violet: "violet"};
+    var horizontalInput = 0;
+    var verticalInput = 0;
+    var Input = {};
+    Input.getKey = function getKey(key)
     {
-      ngo.active = on;
-      if(ngo.active)
+      switch(key)
       {
-        setPosition(ngo.name, ngo.transform.position.x, ngo.transform.position.y);
+        case "q":
+          return KeyStates.q;
+        case "w":
+          return KeyStates.w;
+        case "e":
+          return KeyStates.e;
+        case "r":
+          return KeyStates.r;
+        case "t":
+          return KeyStates.t;
+        case "y":
+          return KeyStates.y;
+        case "u":
+          return KeyStates.u;
+        case "i":
+          return KeyStates.i;
+        case "o":
+          return KeyStates.o;
+        case "p":
+          return KeyStates.p;
+        case "a":
+          return KeyStates.a;
+        case "s":
+          return KeyStates.s;
+        case "d":
+          return KeyStates.d;
+        case "f":
+          return KeyStates.f;
+        case "g":
+          return KeyStates.g;
+        case "h":
+          return KeyStates.h;
+        case "j":
+          return KeyStates.j;
+        case "k":
+          return KeyStates.k;
+        case "l":
+          return KeyStates.l;
+        case "z":
+          return KeyStates.z;
+        case "x":
+          return KeyStates.x;
+        case "c":
+          return KeyStates.c;
+        case "v":
+          return KeyStates.v;
+        case "b":
+          return KeyStates.b;
+        case "n":
+          return KeyStates.n;
+        case "m":
+          return KeyStates.m;
+        case "up":
+          return KeyStates.up;
+        case "right":
+          return KeyStates.right;
+        case "down":
+          return KeyStates.down;
+        case "left":
+          return KeyStates.left;
+        
       }
-      else
+    };
+  }
+  
+  //Constant Updates
+  {
+    function draw()
+    {
+      DetermineInputValues();
+      Update();
+      CheckScripts();
+      if(updateColors)
       {
-        setPosition(ngo.name, 1000, 1000);
+        UpdateColors();
       }
-      UpdateActiveColliders();
+      ApplyCameraPosition();
+      ApplyCollisions();
+      ApplyGravity();
+      ApplyVelocities();
+      ApplyMoves();
+      ApplyPositions();
     }
-    else
+    
+    function slowDraw()
     {
-      time *= 1000;
-      var newLoop = timedLoop(time, function(){
+      if(turnOffNonVisible)
+      {
+        TurnOffNonVisible();
+      }
+    }
+  }
+  
+  //Gameobject Handling
+  {
+    var GameObjects = [];
+    var Scripts = [];
+    
+    var rigidBody = "rigidBody";
+    var boxCollider = "boxCollider";
+    var script = "script";
+    
+    var StaticGameObjects = [];
+    
+    
+    function Instantiate(name, x, y, width, height, color)
+    {
+      var ngo = {};
+      ngo.name = name;
+      ngo.tag = "default";
+      ngo.active = true;
+      ngo.staticPosition = false;
+      ngo.transform = {};
+      
+      ngo.transform.position = {x: x, y: y};
+      if(width > 320)
+      {
+        console.log("When instantiating, width cannot be greater than 320");
+        width = 320;
+      }
+      if(height > 450)
+      {
+        console.log("When instantiating, heigh cannot be greater than 450");
+        height = 450;
+      }
+      ngo.transform.scale = {width: width, height: height};
+      ngo.transform.position.direction = {x: 0, y: 0};
+      ngo.transform.Move = function Move(x,y)
+      {
+        ngo.transform.position.direction.x = x;
+        ngo.transform.position.direction.y = y;
+      };
+      
+      
+      ngo.spriteRenderer = {color: color};
+      appendItem(GameObjects, ngo);
+      DrawObject(ngo);
+      ngo.variables = {};
+      
+      
+      ngo.SetActive =  function SetActive(on, time)
+      {
+        if(time == null)
+        {
           ngo.active = on;
           if(ngo.active)
           {
@@ -269,196 +334,156 @@ function Instantiate(name, x, y, width, height, color)
             setPosition(ngo.name, 1000, 1000);
           }
           UpdateActiveColliders();
-          stopTimedLoop(newLoop);
-      });
-    }
-  };
-  
-  ngo.AddComponent = function AddComponent(component, info)
-  {
-    switch(component)
-    {
-      case rigidBody:
-        if(ngo.Rigidbody != null)
-        {
-          console.log("You have already added a " + component + " to " + ngo.name + ". Do not add more than one");
         }
         else
         {
-          ngo.Rigidbody = {};
-          ngo.Rigidbody.velocity = {x: 0, y: 0};
-          ngo.Rigidbody.useGravity = {gravity: true};
-          ngo.Rigidbody.SetVelocity = function AddComponent(x, y)
-          {
-            if(x != null && y != null)
+          time *= 1000;
+          var newLoop = timedLoop(time, function(){
+              ngo.active = on;
+              if(ngo.active)
+              {
+                setPosition(ngo.name, ngo.transform.position.x, ngo.transform.position.y);
+              }
+              else
+              {
+                setPosition(ngo.name, 1000, 1000);
+              }
+              UpdateActiveColliders();
+              stopTimedLoop(newLoop);
+          });
+        }
+      };
+      
+      ngo.AddComponent = function AddComponent(component, info)
+      {
+        switch(component)
+        {
+          case rigidBody:
+            if(ngo.Rigidbody != null)
             {
-              ngo.Rigidbody.velocity.x = x;
-              ngo.Rigidbody.velocity.y = y;
+              console.log("You have already added a " + component + " to " + ngo.name + ". Do not add more than one");
             }
             else
             {
-              console.log("When using Rigidbody.SetVelocity(), you must input a x and y value");
-            }
-          };
-          ngo.Rigidbody.AddForce = function AddForce(x, y)
-          {
-                x /= 10;
-                y /= 10;
-                var currentVelocityX = x;
-                var currentVelocityY = -y;
-                var resistance = 0.01;
-                var newLoop = timedLoop(fixedTime, function(){
-                currentVelocityX -= resistance;
-                currentVelocityY += resistance;
-                if(currentVelocityX > 0)
-                {
-                  ngo.Rigidbody.velocity.x += currentVelocityX;
-                }
-                if(currentVelocityY < 0)
-                {
-                  ngo.Rigidbody.velocity.y += currentVelocityY;
-                }
-                if(currentVelocityX <= 0 && currentVelocityY >= 0)
-                {
-                  stopTimedLoop(newLoop);
-                }
-            });
-          };
-        }
-        break;
-      case boxCollider:
-        if(ngo.BoxCollider != null)
-        {
-          console.log("You have already added a " + component + " to " + ngo.name + ". Do not add more than one");
-        }
-        else
-        {
-          ngo.BoxCollider = {x: ngo.transform.position.x, y: ngo.transform.position.y, width: ngo.transform.scale.width, height: ngo.transform.scale.height};
-          ngo.BoxCollider.collisions = {up: false, right: false, down: false, left: false};
-          ngo.BoxCollider.collisions.count = {};
-          ngo.BoxCollider.collisions.info = [];
-          ngo.BoxCollider.active = true;
-          ngo.BoxCollider.collisions.CompareTag = function CompareTag(tag)
-          {
-            for(var curcol = 0; curcol < ngo.BoxCollider.collisions.info.length; curcol++)
-            {
-              var hitObj = ngo.BoxCollider.collisions.info[curcol];
-              if(hitObj.tag == tag)
+              ngo.Rigidbody = {};
+              ngo.Rigidbody.velocity = {x: 0, y: 0};
+              ngo.Rigidbody.useGravity = {gravity: true};
+              ngo.Rigidbody.SetVelocity = function AddComponent(x, y)
               {
-                return true;
+                if(x != null && y != null)
+                {
+                  ngo.Rigidbody.velocity.x = x;
+                  ngo.Rigidbody.velocity.y = y;
+                }
+                else
+                {
+                  console.log("When using Rigidbody.SetVelocity(), you must input a x and y value");
+                }
+              };
+              ngo.Rigidbody.AddForce = function AddForce(x, y)
+              {
+                    x /= 10;
+                    y /= 10;
+                    var currentVelocityX = x;
+                    var currentVelocityY = -y;
+                    var resistance = 0.01;
+                    var newLoop = timedLoop(fixedTime, function(){
+                    currentVelocityX -= resistance;
+                    currentVelocityY += resistance;
+                    if(currentVelocityX > 0)
+                    {
+                      ngo.Rigidbody.velocity.x += currentVelocityX;
+                    }
+                    if(currentVelocityY < 0)
+                    {
+                      ngo.Rigidbody.velocity.y += currentVelocityY;
+                    }
+                    if(currentVelocityX <= 0 && currentVelocityY >= 0)
+                    {
+                      stopTimedLoop(newLoop);
+                    }
+                });
+              };
+            }
+            break;
+          case boxCollider:
+            if(ngo.BoxCollider != null)
+            {
+              console.log("You have already added a " + component + " to " + ngo.name + ". Do not add more than one");
+            }
+            else
+            {
+              ngo.BoxCollider = {x: ngo.transform.position.x, y: ngo.transform.position.y, width: ngo.transform.scale.width, height: ngo.transform.scale.height};
+              ngo.BoxCollider.collisions = {up: false, right: false, down: false, left: false};
+              ngo.BoxCollider.collisions.count = {};
+              ngo.BoxCollider.collisions.info = [];
+              ngo.BoxCollider.active = true;
+              ngo.BoxCollider.collisions.CompareTag = function CompareTag(tag)
+              {
+                for(var curcol = 0; curcol < ngo.BoxCollider.collisions.info.length; curcol++)
+                {
+                  var hitObj = ngo.BoxCollider.collisions.info[curcol];
+                  if(hitObj.tag == tag)
+                  {
+                    return true;
+                  }
+                }
+              };
+              ngo.BoxCollider.collisions.GetTag = function GetTag(tag)
+              {
+                for(var curcol = 0; curcol < ngo.BoxCollider.collisions.info.length; curcol++)
+                {
+                  var hitObj = ngo.BoxCollider.collisions.info[curcol];
+                  if(hitObj.tag == tag)
+                  {
+                    return ngo.BoxCollider.collisions.info[curcol];
+                  }
+                }
+              };
+            }
+            UpdateActiveColliders();
+            break;
+          case "script":
+            for(var scr = 0; scr < Scripts.length; scr++)
+            {
+              if(Scripts[scr].name == info)
+              {
+                appendItem(Scripts[scr].objects, FindGameObjectIndex(ngo));
               }
             }
-          };
-          ngo.BoxCollider.collisions.GetTag = function GetTag(tag)
-          {
-            for(var curcol = 0; curcol < ngo.BoxCollider.collisions.info.length; curcol++)
-            {
-              var hitObj = ngo.BoxCollider.collisions.info[curcol];
-              if(hitObj.tag == tag)
-              {
-                return ngo.BoxCollider.collisions.info[curcol];
-              }
-            }
-          };
+            break;
         }
-        UpdateActiveColliders();
-        break;
-      case "script":
-        for(var scr = 0; scr < Scripts.length; scr++)
-        {
-          if(Scripts[scr].name == info)
-          {
-            appendItem(Scripts[scr].objects, FindGameObjectIndex(ngo));
-          }
-        }
-        break;
+      };
+      return ngo;
     }
-  };
-  return ngo;
-}
-
-function InstantiateStatic(x, y, width, height, color)
-{
-  var name = "staticObject" + randomNumber(0, 100000);
-  appendItem(StaticGameObjects, name);
-  createCanvas(name);
-  setActiveCanvas(name);
-  setPosition(name,x, y);
-  setFillColor(color);
-  rect(0, 0, width, height);
-}
-
-function InstantiateString(map, color)
-{
-  var chars = map.split('');
-  var x = 0;
-  var y = 200;
-  var width = 160;
-  var height = 50;
-  var col = (color == null ? Color.green : color);
-  for(var i =0; i < chars.length; i++)
-  {
-    switch(chars[i])
+    
+    function InstantiateStatic(x, y, width, height, color)
     {
-      case "_":
-        var ifloor = Instantiate("floor", x, y, width, height, col);
-        ifloor.AddComponent(boxCollider);
-        ifloor.tag = "floor";
-        x += width;
-        break;
-      case " ":
-        x += (width / 2);
-        break;
-      case ">":
-        x += (width / 2);
-        break;
-      case "<":
-        x -= (width / 2);
-        break;
-      case "+":
-        y -= height;
-        break;
-      case "-":
-        y += height;
-        break;
-      case "d":
-        for(var j = 0; j < i; j++)
-        {
-          switch(chars[j])
-          {
-            case "_":
-              var ifloor2 = Instantiate("floor", x, y, width, height, col);
-              ifloor2.AddComponent(boxCollider);
-              ifloor2.tag = "floor";
-              x += width;
-              break;
-            case " ":
-              x += (width / 2);
-              break;
-            case ">":
-              x += (width / 2);
-              break;
-            case "<":
-              x -= (width / 2);
-              break;
-            case "+":
-              y -= height;
-              break;
-            case "-":
-              y += height;
-              break;
-          }
-        }
-        break;
-      case "r":
-        var possibleChars = ["_", " ", ">", "<", "+", "-"];
-        var randomChar = possibleChars[randomNumber(0, possibleChars.length - 1)];
-        switch(randomChar)
+      var name = "staticObject" + randomNumber(0, 100000);
+      appendItem(StaticGameObjects, name);
+      createCanvas(name);
+      setActiveCanvas(name);
+      setPosition(name,x, y);
+      setFillColor(color);
+      rect(0, 0, width, height);
+    }
+    
+    function InstantiateString(map, color)
+    {
+      var chars = map.split('');
+      var x = 0;
+      var y = 200;
+      var width = 160;
+      var height = 50;
+      var col = (color == null ? Color.green : color);
+      for(var i =0; i < chars.length; i++)
+      {
+        switch(chars[i])
         {
           case "_":
-            var ifloor3 = Instantiate("floor", x, y, width, height, col);
-            ifloor3.AddComponent(boxCollider);
-            ifloor3.tag = "floor";
+            var ifloor = Instantiate("floor", x, y, width, height, col);
+            ifloor.AddComponent(boxCollider);
+            ifloor.tag = "floor";
             x += width;
             break;
           case " ":
@@ -476,631 +501,621 @@ function InstantiateString(map, color)
           case "-":
             y += height;
             break;
-          }
-        break;
-    }
-  }
-}
-
-function FindGameObjectIndex(go)
-{
-  for(var i = 0; i < GameObjects.length; i++)
-  {
-    if(GameObjects[i].name == go.name)
-    {
-      return i;
-    }
-  }
-}
-
-function DrawObject(go)
-{
-  go.name = go.name + randomNumber(0, 100000);
-  createCanvas(go.name);
-  setActiveCanvas(go.name);
-  setPosition(go.name,go.transform.position.x, go.transform.position.y);
-  // setStrokeColor(go.spriteRenderer.color);
-  setFillColor(go.spriteRenderer.color);
-  rect(0, 0, go.transform.scale.width, go.transform.scale.height);
-}
-
-//SCRIPTS
-function CreateScript(info)
-{
-  var newScript = {};
-  newScript.name = info;
-  newScript.objects = [];
-  appendItem(Scripts, newScript);
-}
-
-function CreateScripts(info)
-{
-  for(var i = 0; i < info.length; i++)
-  {
-    var newScript = {};
-    newScript.name = info[i];
-    newScript.objects = [];
-    appendItem(Scripts, newScript);
-  }
-}
-
-function CheckScripts()
-{
-  for(var i = 0; i < Scripts.length; i++)
-  {
-    for(var j = 0; j < Scripts[i].objects.length; j++)
-    {
-      if(GameObjects[Scripts[i].objects[j]].active)
-      {
-        var str = "(" + Scripts[i].objects[j] + ")";
-        eval(Scripts[i].name + str);
+          case "d":
+            for(var j = 0; j < i; j++)
+            {
+              switch(chars[j])
+              {
+                case "_":
+                  var ifloor2 = Instantiate("floor", x, y, width, height, col);
+                  ifloor2.AddComponent(boxCollider);
+                  ifloor2.tag = "floor";
+                  x += width;
+                  break;
+                case " ":
+                  x += (width / 2);
+                  break;
+                case ">":
+                  x += (width / 2);
+                  break;
+                case "<":
+                  x -= (width / 2);
+                  break;
+                case "+":
+                  y -= height;
+                  break;
+                case "-":
+                  y += height;
+                  break;
+              }
+            }
+            break;
+          case "r":
+            var possibleChars = ["_", " ", ">", "<", "+", "-"];
+            var randomChar = possibleChars[randomNumber(0, possibleChars.length - 1)];
+            switch(randomChar)
+            {
+              case "_":
+                var ifloor3 = Instantiate("floor", x, y, width, height, col);
+                ifloor3.AddComponent(boxCollider);
+                ifloor3.tag = "floor";
+                x += width;
+                break;
+              case " ":
+                x += (width / 2);
+                break;
+              case ">":
+                x += (width / 2);
+                break;
+              case "<":
+                x -= (width / 2);
+                break;
+              case "+":
+                y -= height;
+                break;
+              case "-":
+                y += height;
+                break;
+              }
+            break;
+        }
       }
     }
-  }
-}
-
-//UI HANDLING
-function CreateText(name, text, x, y, color)
-{
-  var element = name + randomNumber(0,100000);
-  textLabel(element, text);
-  setProperty(element, "x", x);
-  setProperty(element, "y", y);
-  setProperty(element, "text-color", color);
-  return element;
-}
-
-//PHYSICS HANDLING
-var ActiveColliders = [];
-function UpdateActiveColliders()
-{
-  ActiveColliders = [];
-  for(var i = 0; i < GameObjects.length; i++)
-  {
-    var obj = GameObjects[i];
-    if(obj.active)
+    
+    function FindGameObjectIndex(go)
     {
-      if(obj.BoxCollider != null)
+      for(var i = 0; i < GameObjects.length; i++)
       {
-        if(obj.BoxCollider.active)
+        if(GameObjects[i].name == go.name)
         {
-          appendItem(ActiveColliders, obj);  
+          return i;
+        }
+      }
+    }
+    
+    function DrawObject(go)
+    {
+      go.name = go.name + randomNumber(0, 100000);
+      createCanvas(go.name);
+      setActiveCanvas(go.name);
+      setPosition(go.name,go.transform.position.x, go.transform.position.y);
+      // setStrokeColor(go.spriteRenderer.color);
+      setFillColor(go.spriteRenderer.color);
+      rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+    }
+  }
+
+  //Script Handling
+  {
+    function CreateScript(info)
+    {
+      var newScript = {};
+      newScript.name = info;
+      newScript.objects = [];
+      appendItem(Scripts, newScript);
+    }
+    
+    function CreateScripts(info)
+    {
+      for(var i = 0; i < info.length; i++)
+      {
+        var newScript = {};
+        newScript.name = info[i];
+        newScript.objects = [];
+        appendItem(Scripts, newScript);
+      }
+    }
+    
+    function CheckScripts()
+    {
+      for(var i = 0; i < Scripts.length; i++)
+      {
+        for(var j = 0; j < Scripts[i].objects.length; j++)
+        {
+          if(GameObjects[Scripts[i].objects[j]].active)
+          {
+            var str = "(" + Scripts[i].objects[j] + ")";
+            eval(Scripts[i].name + str);
+          }
         }
       }
     }
   }
-}
-
-function ApplyCollisions()
-{
-  for(var i = 0; i < ActiveColliders.length; i++)
+  
+  //UI Handling
   {
-    var go = ActiveColliders[i];
-   
-      var col1 = go.BoxCollider;
-      col1.collisions.up = false;
-      col1.collisions.right = false;
-      col1.collisions.down = false;
-      col1.collisions.left = false;
-      col1.collisions.count = 0;
-      col1.collisions.info = [];
-      for(var j = 0; j < ActiveColliders.length; j++)
+    function CreateText(name, text, x, y, color)
+    {
+      var element = name + randomNumber(0,100000);
+      textLabel(element, text);
+      setProperty(element, "x", x);
+      setProperty(element, "y", y);
+      setProperty(element, "text-color", color);
+      return element;
+    }
+  }
+  
+  //Physics Handling
+  {
+    var ActiveColliders = [];
+    function UpdateActiveColliders()
+    {
+      ActiveColliders = [];
+      for(var i = 0; i < GameObjects.length; i++)
       {
-        var go2 = ActiveColliders[j];
-        if(go.Rigidbody != null || go2.Rigidbody != null)
+        var obj = GameObjects[i];
+        if(obj.active)
         {
-          if(i != j)
+          if(obj.BoxCollider != null)
           {
-            var col2 = go2.BoxCollider;
-            if (
-                  col1.x <= col2.x + col2.width &&
-                  col1.x + col1.width >= col2.x &&
-                  col1.y <= col2.y + col2.height &&
-                  col1.y + col1.height >= col2.y
-                ) 
-                {
-                  col1.collisions.count+=1;
-                  appendItem(col1.collisions.info, go2);
-                  if((col2.y + (col2.height / 1.3)) <= col1.y)
-                  {
-                    col1.collisions.up = true;
-                    col2.collisions.down = true;
-                  }
-                  else if((col1.y + (col1.height / 1.3)) <= col2.y)
-                  {
-                    col1.collisions.down = true;
-                    col2.collisions.up = true;
-                  }
-                  else if((col2.x + (col2.width / 1.05)) <= col1.x)
-                  {
-                    col1.collisions.left = true;
-                    col2.collisions.right = true;
-                  }
-                  else if((col1.x + (col1.width)) <= col2.x)
-                  {
-                    col1.collisions.right = true;
-                    col2.collisions.left = true;
-                  }
-                }
+            if(obj.BoxCollider.active)
+            {
+              appendItem(ActiveColliders, obj);  
+            }
+          }
+        }
+      }
+    }
+    
+    function ApplyCollisions()
+    {
+      for(var i = 0; i < ActiveColliders.length; i++)
+      {
+        var go = ActiveColliders[i];
+       
+          var col1 = go.BoxCollider;
+          col1.collisions.up = false;
+          col1.collisions.right = false;
+          col1.collisions.down = false;
+          col1.collisions.left = false;
+          col1.collisions.count = 0;
+          col1.collisions.info = [];
+          for(var j = 0; j < ActiveColliders.length; j++)
+          {
+            var go2 = ActiveColliders[j];
+            if(go.Rigidbody != null || go2.Rigidbody != null)
+            {
+              if(i != j)
+              {
+                var col2 = go2.BoxCollider;
+                if (
+                      col1.x <= col2.x + col2.width &&
+                      col1.x + col1.width >= col2.x &&
+                      col1.y <= col2.y + col2.height &&
+                      col1.y + col1.height >= col2.y
+                    ) 
+                    {
+                      col1.collisions.count+=1;
+                      appendItem(col1.collisions.info, go2);
+                      if((col2.y + (col2.height / 1.3)) <= col1.y)
+                      {
+                        col1.collisions.up = true;
+                        col2.collisions.down = true;
+                      }
+                      else if((col1.y + (col1.height / 1.3)) <= col2.y)
+                      {
+                        col1.collisions.down = true;
+                        col2.collisions.up = true;
+                      }
+                      else if((col2.x + (col2.width / 1.05)) <= col1.x)
+                      {
+                        col1.collisions.left = true;
+                        col2.collisions.right = true;
+                      }
+                      else if((col1.x + (col1.width)) <= col2.x)
+                      {
+                        col1.collisions.right = true;
+                        col2.collisions.left = true;
+                      }
+                    }
+              }
+            }
+            
+          }
+        
+      }
+    }
+    
+    var Gravity = 0.04;
+    function ApplyGravity()
+    {
+      for(var i = 0; i < GameObjects.length; i++)
+      {
+        if(GameObjects[i].Rigidbody != null && GameObjects[i].active)
+        {
+          var gorb = GameObjects[i].Rigidbody;
+          if(gorb.useGravity)
+          {
+            gorb.SetVelocity(gorb.velocity.x, gorb.velocity.y + Gravity);
+          }
+        }
+      }
+    }
+    
+    function ApplyVelocities()
+    {
+      for(var i = 0; i < GameObjects.length; i++)
+      {
+        var go = GameObjects[i];
+        if(go.Rigidbody != null && go.active)
+        {
+          if(go.BoxCollider != null)
+          {
+             if(go.BoxCollider.collisions.up && go.Rigidbody.velocity.y < 0)
+          {
+            go.Rigidbody.velocity.y = 0;
+          }
+          if(go.BoxCollider.collisions.right && go.Rigidbody.velocity.x > 0)
+          {
+            go.Rigidbody.velocity.x = 0;
+          }
+          if(go.BoxCollider.collisions.down && go.Rigidbody.velocity.y > 0)
+          {
+            go.Rigidbody.velocity.y = 0;
+          }
+          if(go.BoxCollider.collisions.left && go.Rigidbody.velocity.x < 0)
+          {
+            go.Rigidbody.velocity.x = 0;
+          }
+          }
+         
+          
+          go.transform.position.x += go.Rigidbody.velocity.x;
+          go.transform.position.y += go.Rigidbody.velocity.y;
+        }
+      }
+    }
+    
+    function ApplyMoves()
+    {
+      for(var i = 0; i < GameObjects.length; i++)
+      {
+        var go = GameObjects[i];
+        if(go.transform.position.direction.x != 0)
+        {
+          go.transform.position.x += go.transform.position.direction.x;
+        }
+        if(go.transform.position.direction.y != 0)
+        {
+           go.transform.position.y += go.transform.position.direction.y;
+        }
+      }
+    }
+    
+    function ApplyPositions()
+    {
+      for(var i = 0; i < GameObjects.length; i++)
+      {
+        var go = GameObjects[i];
+        if(go.active)
+        {
+          setPosition(go.name, go.transform.position.x, go.transform.position.y);
+          var goCol = go.BoxCollider;
+          if(goCol != null)
+          {
+            goCol.x = go.transform.position.x;
+            goCol.y = go.transform.position.y;
+            goCol.width = go.transform.scale.width;
+            goCol.height = go.transform.scale.height;
           }
         }
         
       }
-    
-  }
-}
-
-
-var Gravity = 0.04;
-function ApplyGravity()
-{
-  for(var i = 0; i < GameObjects.length; i++)
-  {
-    if(GameObjects[i].Rigidbody != null && GameObjects[i].active)
-    {
-      var gorb = GameObjects[i].Rigidbody;
-      if(gorb.useGravity)
-      {
-        gorb.SetVelocity(gorb.velocity.x, gorb.velocity.y + Gravity);
-      }
     }
-  }
-}
-
-function ApplyVelocities()
-{
-  for(var i = 0; i < GameObjects.length; i++)
-  {
-    var go = GameObjects[i];
-    if(go.Rigidbody != null && go.active)
-    {
-      if(go.BoxCollider != null)
-      {
-         if(go.BoxCollider.collisions.up && go.Rigidbody.velocity.y < 0)
-      {
-        go.Rigidbody.velocity.y = 0;
-      }
-      if(go.BoxCollider.collisions.right && go.Rigidbody.velocity.x > 0)
-      {
-        go.Rigidbody.velocity.x = 0;
-      }
-      if(go.BoxCollider.collisions.down && go.Rigidbody.velocity.y > 0)
-      {
-        go.Rigidbody.velocity.y = 0;
-      }
-      if(go.BoxCollider.collisions.left && go.Rigidbody.velocity.x < 0)
-      {
-        go.Rigidbody.velocity.x = 0;
-      }
-      }
-     
-      
-      go.transform.position.x += go.Rigidbody.velocity.x;
-      go.transform.position.y += go.Rigidbody.velocity.y;
-    }
-  }
-}
-
-function ApplyMoves()
-{
-  for(var i = 0; i < GameObjects.length; i++)
-  {
-    var go = GameObjects[i];
-    if(go.transform.position.direction.x != 0)
-    {
-      go.transform.position.x += go.transform.position.direction.x;
-    }
-    if(go.transform.position.direction.y != 0)
-    {
-       go.transform.position.y += go.transform.position.direction.y;
-    }
-  }
-}
-
-function ApplyPositions()
-{
-  for(var i = 0; i < GameObjects.length; i++)
-  {
-    var go = GameObjects[i];
-    if(go.active)
-    {
-      setPosition(go.name, go.transform.position.x, go.transform.position.y);
-      var goCol = go.BoxCollider;
-      if(goCol != null)
-      {
-        goCol.x = go.transform.position.x;
-        goCol.y = go.transform.position.y;
-        goCol.width = go.transform.scale.width;
-        goCol.height = go.transform.scale.height;
-      }
-    }
-    
-  }
-}
-
-
-
-
-//CAMERA
-var cameraOffset = {x: 160, y: 200};
-var camera = Instantiate("camera", cameraOffset.x,cameraOffset.y,0,0,"black");
-
-function ApplyCameraPosition()
-{
-  for(var i = 0; i < GameObjects.length; i++)
-  {
-    var go = GameObjects[i];
-    if(go != camera)
-    {
-      go.transform.position.x -= camera.transform.position.x;
-      go.transform.position.x += cameraOffset.x;
-      go.transform.position.y -= camera.transform.position.y;
-      go.transform.position.y += cameraOffset.y;
-    }
-  }
-  for(var j = 0; j < StaticGameObjects.length; j++)
-  {
-    var sgo = StaticGameObjects[j];
-    if(sgo != camera)
-    {
-      setPosition(sgo, getProperty(sgo, "x") - camera.transform.position.x +  cameraOffset.x, getProperty(sgo, "y") - camera.transform.position.y +  cameraOffset.y);
-    }
-  }
-}
-
-function SetBackground(color)
-{
-  setProperty("screen1", "background-color", color);
-}
-
-
-//INPUT HANDLING
-
-var horizontalInput = 0;
-var verticalInput = 0;
-
-var xInput = 0;
-var yInput = 0;
-
-//Engine variables, not for use.
-var heldDownW = false;
-var heldDownS = false;
-var wHeldFirst = true;
-var heldDownD = false;
-var heldDownA = false;
-var dHeldFirst = true;
-
-onEvent("screen1", "keyup", function (keys) {
-  if(keys.key == "w")
-  {
-   heldDownW = false;
-  }
-  else if(keys.key == "s")
-  {
-   heldDownS = false;
-  }
-});
-onEvent("screen1", "keydown", function (keys) {
-  if(keys.key == "w")
-  {
-    if(!heldDownS)
-    {
-      wHeldFirst = true;
-    }
-    else{
-      wHeldFirst = false;
-    }
-    heldDownW = true;
-  }
-  else if(keys.key == "s")
-  {
-    if(!heldDownW)
-    {
-      wHeldFirst = false;
-    }
-     else{
-      wHeldFirst = true;
-    }
-    heldDownS = true;
-  }
-});
-onEvent("screen1", "keyup", function (keys) {
-  if(keys.key == "d")
-  {
-   heldDownD = false;
-  }
-  else if(keys.key == "a")
-  {
-   heldDownA = false;
-  }
-});
-onEvent("screen1", "keydown", function (keys) {
-  if(keys.key == "d")
-  {
-    if(!heldDownA)
-    {
-      dHeldFirst = true;
-    }
-    else{
-      dHeldFirst = false;
-    }
-    heldDownD = true;
-  }
-  else if(keys.key == "a")
-  {
-    if(!heldDownD)
-    {
-      dHeldFirst = false;
-    }
-     else{
-      dHeldFirst = true;
-    }
-    heldDownA = true;
-  }
-});
-
-//Engine Function, not for use.
-function DetermineInputValues()
-{
-  xInput = 0;
-   if(heldDownD)
-  {
-    xInput = 1;
-  }
-  if(heldDownA){
-    xInput = -1;
-  }
-  if(heldDownD && heldDownA && dHeldFirst)
-  {
-    xInput = -1;
-  }
-  if(heldDownD && heldDownA && !dHeldFirst)
-  {
-    xInput = 1;
-  }
-  yInput = 0;
-   if(heldDownW)
-  {
-    yInput = -1;
-  }
-  if(heldDownS){
-    yInput = 1;
-  }
-  if(heldDownW && heldDownS && wHeldFirst)
-  {
-    yInput = 1;
-  }
-  if(heldDownW && heldDownS && !wHeldFirst)
-  {
-    yInput = -1;
   }
   
-  horizontalInput = xInput;
-  verticalInput = yInput;
-}
-
-var Input = {};
-Input.getKey = function getKey(key)
-{
-  switch(key)
+  //Camera
   {
-    case "q":
-      return KeyStates.q;
-    case "w":
-      return KeyStates.w;
-    case "e":
-      return KeyStates.e;
-    case "r":
-      return KeyStates.r;
-    case "t":
-      return KeyStates.t;
-    case "y":
-      return KeyStates.y;
-    case "u":
-      return KeyStates.u;
-    case "i":
-      return KeyStates.i;
-    case "o":
-      return KeyStates.o;
-    case "p":
-      return KeyStates.p;
-    case "a":
-      return KeyStates.a;
-    case "s":
-      return KeyStates.s;
-    case "d":
-      return KeyStates.d;
-    case "f":
-      return KeyStates.f;
-    case "g":
-      return KeyStates.g;
-    case "h":
-      return KeyStates.h;
-    case "j":
-      return KeyStates.j;
-    case "k":
-      return KeyStates.k;
-    case "l":
-      return KeyStates.l;
-    case "z":
-      return KeyStates.z;
-    case "x":
-      return KeyStates.x;
-    case "c":
-      return KeyStates.c;
-    case "v":
-      return KeyStates.v;
-    case "b":
-      return KeyStates.b;
-    case "n":
-      return KeyStates.n;
-    case "m":
-      return KeyStates.m;
-    case "up":
-      return KeyStates.up;
-    case "right":
-      return KeyStates.right;
-    case "down":
-      return KeyStates.down;
-    case "left":
-      return KeyStates.left;
+    var cameraOffset = {x: 160, y: 200};
+    var camera = Instantiate("camera", cameraOffset.x,cameraOffset.y,0,0,"black");
     
-  }
-};
-
-var KeyStates = {q: false, w: false, e: false,r: false,t: false,y: false,u: false,i: false,o: false,p: false,a: false,s: false,d: false,f: false,g: false,h: false,j: false,k: false,l: false,z: false,x: false,c: false,v: false,b: false,n: false,m: false, up: false, right: false, down: false, left: false};
-
-onEvent("screen1", "keydown", function (keys) {
-  KeyStates.q = keys.key == "q";
-  KeyStates.w = keys.key == "w";
-  KeyStates.e = keys.key == "e";
-  KeyStates.r = keys.key == "r";
-  KeyStates.t = keys.key == "t";
-  KeyStates.y = keys.key == "y";
-  KeyStates.u = keys.key == "u";
-  KeyStates.i = keys.key == "i";
-  KeyStates.o = keys.key == "o";
-  KeyStates.p = keys.key == "p";
-  KeyStates.a = keys.key == "a";
-  KeyStates.s = keys.key == "s";
-  KeyStates.d = keys.key == "d";
-  KeyStates.f = keys.key == "f";
-  KeyStates.g = keys.key == "g";
-  KeyStates.h = keys.key == "h";
-  KeyStates.j = keys.key == "j";
-  KeyStates.k = keys.key == "k";
-  KeyStates.l = keys.key == "l";
-  KeyStates.z = keys.key == "z";
-  KeyStates.x = keys.key == "x";
-  KeyStates.c = keys.key == "c";
-  KeyStates.v = keys.key == "v";
-  KeyStates.b = keys.key == "b";
-  KeyStates.n = keys.key == "n";
-  KeyStates.m = keys.key == "m";
-  KeyStates.up = keys.key == "up";
-  KeyStates.right = keys.key == "right";
-  KeyStates.down = keys.key == "down";
-  KeyStates.left = keys.key == "left";
-});
-
-onEvent("screen1", "keyup", function (keys) {
-  KeyStates.q = !keys.key == "q";
-  KeyStates.w = !keys.key == "w";
-  KeyStates.e = !keys.key == "e";
-  KeyStates.r = !keys.key == "r";
-  KeyStates.t = !keys.key == "t";
-  KeyStates.y = !keys.key == "y";
-  KeyStates.u = !keys.key == "u";
-  KeyStates.i = !keys.key == "i";
-  KeyStates.o = !keys.key == "o";
-  KeyStates.p = !keys.key == "p";
-  KeyStates.a = !keys.key == "a";
-  KeyStates.s = !keys.key == "s";
-  KeyStates.d = !keys.key == "d";
-  KeyStates.f = !keys.key == "f";
-  KeyStates.g = !keys.key == "g";
-  KeyStates.h = !keys.key == "h";
-  KeyStates.j = !keys.key == "j";
-  KeyStates.k = !keys.key == "k";
-  KeyStates.l = !keys.key == "l";
-  KeyStates.z = !keys.key == "z";
-  KeyStates.x = !keys.key == "x";
-  KeyStates.c = !keys.key == "c";
-  KeyStates.v = !keys.key == "v";
-  KeyStates.b = !keys.key == "b";
-  KeyStates.n = !keys.key == "n";
-  KeyStates.m = !keys.key == "m";
-  KeyStates.up = !keys.key == "up";
-  KeyStates.right = !keys.key == "right";
-  KeyStates.down = !keys.key == "down";
-  KeyStates.left = !keys.key == "left";
-});
-
-
-var Color = {black : "black", white: "white", grey: "gray", gray: "gray", red: "red", orange: "orange", yellow: "yellow", green: "green", blue: "blue", indigo: "indigo", violet: "violet"};
-
-//Optional Functions
-
-//Whether or not to update colors every frame
-var updateColors = false;
-function UpdateColors()
-{
-  for(var i = 0; i < GameObjects.length; i++)
-  {
-    var go = GameObjects[i];
-    setActiveCanvas(go.name);
-    clearCanvas(go.name);
-    setPosition(go.name,go.transform.position.x, go.transform.position.y);
-    setFillColor(go.spriteRenderer.color);
-    rect(0, 0, go.transform.scale.width, go.transform.scale.height);
-  }
-}
-
-//Turn off colliders when they are off screen, then turn them back on when they are on screen again
-var turnOffNonVisible = true;
-var cameraTurnOffDistance = 250;
-function TurnOffNonVisible()
-{
-  for(var i = 0; i < GameObjects.length; i++)
-  {
-    var go = GameObjects[i];
-    if(go != camera)
+    function ApplyCameraPosition()
     {
-      if(DistanceBetween(go, camera) > cameraTurnOffDistance)
+      for(var i = 0; i < GameObjects.length; i++)
       {
-        go.BoxCollider.active = false;  
+        var go = GameObjects[i];
+        if(go != camera && !go.staticPosition)
+        {
+          go.transform.position.x -= camera.transform.position.x;
+          go.transform.position.x += cameraOffset.x;
+          go.transform.position.y -= camera.transform.position.y;
+          go.transform.position.y += cameraOffset.y;
+        }
       }
-      else
+      for(var j = 0; j < StaticGameObjects.length; j++)
       {
-        go.BoxCollider.active = true;  
+        var sgo = StaticGameObjects[j];
+        if(sgo != camera)
+        {
+          setPosition(sgo, getProperty(sgo, "x") - camera.transform.position.x +  cameraOffset.x, getProperty(sgo, "y") - camera.transform.position.y +  cameraOffset.y);
+        }
       }
     }
-    UpdateActiveColliders();
   }
-}
-
-
-
-//Useful Functions
-function Wait(timeout, functionName)
-{
-  timeout *= 1000;
-  var newLoop = timedLoop(timeout, function(){
-      eval(functionName + "()");
-      stopTimedLoop(newLoop);
-  });
-}
-
-function ForeverLoop(timeout, functionName)
-{
-  timedLoop(timeout * 1000, function(){eval(functionName + "()");});
-}
-
-function DistanceBetween(go1, go2)
-{
-  if(go1 != null && go2 != null)
+  
+  //Input Handling
   {
-    var x1 = go1.transform.position.x + (go1.transform.scale.width / 2);
-    var x2 = go2.transform.position.x + (go2.transform.scale.width / 2);
-    var y1 = go1.transform.position.y + (go1.transform.scale.height / 2);
-    var y2 = go2.transform.position.y + (go2.transform.scale.height / 2);
+   
     
-    var xdist = Math.abs(x1 - x2);
-    var ydist = Math.abs(y1 - y2);
-    var xsqr = xdist * xdist;
-    var ysqr = ydist * ydist;
+    var xInput = 0;
+    var yInput = 0;
     
-    var xdyd = xsqr + ysqr;
+    var heldDownW = false;
+    var heldDownS = false;
+    var wHeldFirst = true;
+    var heldDownD = false;
+    var heldDownA = false;
+    var dHeldFirst = true;
     
-    var sqrtxy = Math.sqrt(xdyd);
+    onEvent("screen1", "keyup", function (keys) {
+      if(keys.key == "w")
+      {
+       heldDownW = false;
+      }
+      else if(keys.key == "s")
+      {
+       heldDownS = false;
+      }
+    });
+    onEvent("screen1", "keydown", function (keys) {
+      if(keys.key == "w")
+      {
+        if(!heldDownS)
+        {
+          wHeldFirst = true;
+        }
+        else{
+          wHeldFirst = false;
+        }
+        heldDownW = true;
+      }
+      else if(keys.key == "s")
+      {
+        if(!heldDownW)
+        {
+          wHeldFirst = false;
+        }
+         else{
+          wHeldFirst = true;
+        }
+        heldDownS = true;
+      }
+    });
+    onEvent("screen1", "keyup", function (keys) {
+      if(keys.key == "d")
+      {
+       heldDownD = false;
+      }
+      else if(keys.key == "a")
+      {
+       heldDownA = false;
+      }
+    });
+    onEvent("screen1", "keydown", function (keys) {
+      if(keys.key == "d")
+      {
+        if(!heldDownA)
+        {
+          dHeldFirst = true;
+        }
+        else{
+          dHeldFirst = false;
+        }
+        heldDownD = true;
+      }
+      else if(keys.key == "a")
+      {
+        if(!heldDownD)
+        {
+          dHeldFirst = false;
+        }
+         else{
+          dHeldFirst = true;
+        }
+        heldDownA = true;
+      }
+    });
     
-    return sqrtxy;
+    function DetermineInputValues()
+    {
+      xInput = 0;
+       if(heldDownD)
+      {
+        xInput = 1;
+      }
+      if(heldDownA){
+        xInput = -1;
+      }
+      if(heldDownD && heldDownA && dHeldFirst)
+      {
+        xInput = -1;
+      }
+      if(heldDownD && heldDownA && !dHeldFirst)
+      {
+        xInput = 1;
+      }
+      yInput = 0;
+       if(heldDownW)
+      {
+        yInput = -1;
+      }
+      if(heldDownS){
+        yInput = 1;
+      }
+      if(heldDownW && heldDownS && wHeldFirst)
+      {
+        yInput = 1;
+      }
+      if(heldDownW && heldDownS && !wHeldFirst)
+      {
+        yInput = -1;
+      }
+      
+      horizontalInput = xInput;
+      verticalInput = yInput;
+    }
+    
+    var KeyStates = {q: false, w: false, e: false,r: false,t: false,y: false,u: false,i: false,o: false,p: false,a: false,s: false,d: false,f: false,g: false,h: false,j: false,k: false,l: false,z: false,x: false,c: false,v: false,b: false,n: false,m: false, up: false, right: false, down: false, left: false};
+    
+    
+    onEvent("screen1", "keydown", function (keys) {
+      KeyStates.q = keys.key == "q";
+      KeyStates.w = keys.key == "w";
+      KeyStates.e = keys.key == "e";
+      KeyStates.r = keys.key == "r";
+      KeyStates.t = keys.key == "t";
+      KeyStates.y = keys.key == "y";
+      KeyStates.u = keys.key == "u";
+      KeyStates.i = keys.key == "i";
+      KeyStates.o = keys.key == "o";
+      KeyStates.p = keys.key == "p";
+      KeyStates.a = keys.key == "a";
+      KeyStates.s = keys.key == "s";
+      KeyStates.d = keys.key == "d";
+      KeyStates.f = keys.key == "f";
+      KeyStates.g = keys.key == "g";
+      KeyStates.h = keys.key == "h";
+      KeyStates.j = keys.key == "j";
+      KeyStates.k = keys.key == "k";
+      KeyStates.l = keys.key == "l";
+      KeyStates.z = keys.key == "z";
+      KeyStates.x = keys.key == "x";
+      KeyStates.c = keys.key == "c";
+      KeyStates.v = keys.key == "v";
+      KeyStates.b = keys.key == "b";
+      KeyStates.n = keys.key == "n";
+      KeyStates.m = keys.key == "m";
+      KeyStates.up = keys.key == "up";
+      KeyStates.right = keys.key == "right";
+      KeyStates.down = keys.key == "down";
+      KeyStates.left = keys.key == "left";
+    });
+    
+    onEvent("screen1", "keyup", function (keys) {
+      KeyStates.q = !keys.key == "q";
+      KeyStates.w = !keys.key == "w";
+      KeyStates.e = !keys.key == "e";
+      KeyStates.r = !keys.key == "r";
+      KeyStates.t = !keys.key == "t";
+      KeyStates.y = !keys.key == "y";
+      KeyStates.u = !keys.key == "u";
+      KeyStates.i = !keys.key == "i";
+      KeyStates.o = !keys.key == "o";
+      KeyStates.p = !keys.key == "p";
+      KeyStates.a = !keys.key == "a";
+      KeyStates.s = !keys.key == "s";
+      KeyStates.d = !keys.key == "d";
+      KeyStates.f = !keys.key == "f";
+      KeyStates.g = !keys.key == "g";
+      KeyStates.h = !keys.key == "h";
+      KeyStates.j = !keys.key == "j";
+      KeyStates.k = !keys.key == "k";
+      KeyStates.l = !keys.key == "l";
+      KeyStates.z = !keys.key == "z";
+      KeyStates.x = !keys.key == "x";
+      KeyStates.c = !keys.key == "c";
+      KeyStates.v = !keys.key == "v";
+      KeyStates.b = !keys.key == "b";
+      KeyStates.n = !keys.key == "n";
+      KeyStates.m = !keys.key == "m";
+      KeyStates.up = !keys.key == "up";
+      KeyStates.right = !keys.key == "right";
+      KeyStates.down = !keys.key == "down";
+      KeyStates.left = !keys.key == "left";
+    });
+  }
+
+  //Optional Functions
+  {
+    //Whether or not to update colors every frame
+    var updateColors = false;
+    function UpdateColors()
+    {
+      for(var i = 0; i < GameObjects.length; i++)
+      {
+        var go = GameObjects[i];
+        setActiveCanvas(go.name);
+        clearCanvas(go.name);
+        setPosition(go.name,go.transform.position.x, go.transform.position.y);
+        setFillColor(go.spriteRenderer.color);
+        rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+      }
+    }
+    
+    //Turn off colliders when they are off screen, then turn them back on when they are on screen again
+    var turnOffNonVisible = true;
+    var cameraTurnOffDistance = 250;
+    function TurnOffNonVisible()
+    {
+      for(var i = 0; i < GameObjects.length; i++)
+      {
+        var go = GameObjects[i];
+        if(go != camera)
+        {
+          if(DistanceBetween(go, camera) > cameraTurnOffDistance)
+          {
+            go.BoxCollider.active = false;  
+          }
+          else
+          {
+            go.BoxCollider.active = true;  
+          }
+        }
+        UpdateActiveColliders();
+      }
+    }
+  }
+
+  //Useful Functions
+  {
+    function Wait(timeout, functionName)
+    {
+      timeout *= 1000;
+      var newLoop = timedLoop(timeout, function(){
+          eval(functionName + "()");
+          stopTimedLoop(newLoop);
+      });
+    }
+    
+    function ForeverLoop(timeout, functionName)
+    {
+      timedLoop(timeout * 1000, function(){eval(functionName + "()");});
+    }
+    
+    function DistanceBetween(go1, go2)
+    {
+      if(go1 != null && go2 != null)
+      {
+        var x1 = go1.transform.position.x + (go1.transform.scale.width / 2);
+        var x2 = go2.transform.position.x + (go2.transform.scale.width / 2);
+        var y1 = go1.transform.position.y + (go1.transform.scale.height / 2);
+        var y2 = go2.transform.position.y + (go2.transform.scale.height / 2);
+        
+        var xdist = Math.abs(x1 - x2);
+        var ydist = Math.abs(y1 - y2);
+        var xsqr = xdist * xdist;
+        var ysqr = ydist * ydist;
+        
+        var xdyd = xsqr + ysqr;
+        
+        var sqrtxy = Math.sqrt(xdyd);
+        
+        return sqrtxy;
+      }
+    }
+    
+    function SetBackground(color)
+    {
+      setProperty("screen1", "background-color", color);
+    }
+  }
+  
+  //Starting Game Engine
+  {
+    Start();
+    var fixedTime = 1;
+    timedLoop(fixedTime, function(){draw();});
+    var slowTime = 100;
+    timedLoop(slowTime, function(){slowDraw();});
   }
 }
-//Useful Functions
-
-Start();
-var fixedTime = 1;
-timedLoop(fixedTime, function(){draw();});
-var slowTime = 100;
-timedLoop(slowTime, function(){slowDraw();});
