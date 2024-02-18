@@ -1,0 +1,1232 @@
+//Uncomment this function to open up a url to more info:
+// open("https://github.com/crocodile39/ObjectOrientedAppLab/blob/main/Main");
+
+var platforms = [];
+var player;
+var rb;
+
+var scoreText;
+var score = 0;
+
+var resetPlatforms = false;
+
+//Called once before the first frame
+function Start()
+{
+  for(var i = 0; i < 4; i++)
+  {
+    var floor = Instantiate("floor", -1000, -1000, 320, 50, Color.green);
+    floor.AddComponent(boxCollider);
+    appendItem(platforms, floor);
+  }
+  
+  player = Instantiate("player", 50, 300, 30, 30, Color.blue);
+  player.AddComponent(rigidBody);
+  rb = player.Rigidbody;
+  player.AddComponent(boxCollider);
+  player.variables.speed = 1.5;
+  player.variables.jump = 3;
+  player.variables.canJump = true;
+  player.variables.canResetJump = false;
+  
+  scoreText = CreateText("scoreText", "Score: ", -10, 0, Color.grey);
+  
+  InitializePlatforms();
+}
+
+
+
+//Called every frame
+function Update()
+{
+  PlayerScript();
+  if(PlayerAtEnd() && !resetPlatforms)
+  {
+    resetPlatforms = true;
+    UpdatePlatforms();
+    score++;
+  }
+  if(!PlayerAtEnd())
+  {
+    resetPlatforms = false;
+  }
+  setProperty(scoreText, "text", "Score: " + score);
+
+  if(player.transform.position.y - 150 > platforms[0].transform.position.y && player.transform.position.y- 150 > platforms[1].transform.position.y && player.transform.position.y - 150 > platforms[2].transform.position.y && player.transform.position.y - 150 > platforms[3].transform.position.y)
+  {
+    score = 0;
+    InitializePlatforms();
+    player.transform.position.x = platforms[0].transform.position.x;
+    player.transform.position.y = platforms[0].transform.position.y - 50;
+  }
+}
+
+function InitializePlatforms()
+{
+  platforms[0].transform.position.x = player.transform.position.x - 160;
+  platforms[0].transform.position.y = player.transform.position.y + 50;
+  
+ platforms[1].transform.position.x = platforms[0].transform.position.x + 320 + randomNumber(0, 320);
+  platforms[1].transform.position.y = player.transform.position.y + 50 + randomNumber(-100, 100);
+  
+  platforms[2].transform.position.x = platforms[1].transform.position.x + 320 + randomNumber(0, 320);
+  platforms[2].transform.position.y = player.transform.position.y + 50 + randomNumber(-100, 100);
+  
+  platforms[3].transform.position.x = platforms[2].transform.position.x + 320 + randomNumber(0, 320);
+  platforms[3].transform.position.y = player.transform.position.y + 50 + randomNumber(-100, 100);
+}
+
+function UpdatePlatforms()
+{
+  platforms[0].transform.position.x = platforms[3].transform.position.x;
+  platforms[0].transform.position.y = platforms[3].transform.position.y + 10;
+  
+  platforms[1].transform.position.x = platforms[0].transform.position.x + 320 + randomNumber(0, 320);
+  platforms[1].transform.position.y = player.transform.position.y + 50 + randomNumber(-100, 100);
+  
+  platforms[2].transform.position.x = platforms[1].transform.position.x + 320 + randomNumber(0, 320);
+  platforms[2].transform.position.y = player.transform.position.y + 50 + randomNumber(-100, 100);
+  
+  platforms[3].transform.position.x = platforms[2].transform.position.x + 320 + randomNumber(0, 320);
+  platforms[3].transform.position.y = player.transform.position.y + 50 + randomNumber(-100, 100);
+}
+
+function PlayerAtEnd()
+{
+  return platforms[3].BoxCollider.collisions.up;
+}
+
+function PlayerScript()
+{
+  rb.SetVelocity(horizontalInput * player.variables.speed, rb.velocity.y);
+   
+  if(verticalInput < 0 &&  player.variables.canJump && player.BoxCollider.collisions.down)
+  {
+    rb.velocity.y = 0;
+    rb.AddForce(0, player.variables.jump);
+    player.variables.canJump = false;
+    player.variables.canResetJump = false;
+  }
+  if(!player.BoxCollider.collisions.down)
+  {
+    player.variables.canResetJump = true;
+  }
+
+  if(player.BoxCollider.collisions.down && player.variables.canResetJump)
+  {
+    player.variables.canJump = true;
+    player.variables.canResetJump = false;
+  }
+  
+  camera.transform.position.x = player.transform.position.x;
+  camera.transform.position.y = player.transform.position.y - 50;
+}
+
+
+//Game Engine
+{
+  //Usable Variables
+  {
+    //Use Color.nameOfColor to use one of the colors
+    var Color = {black : "black", white: "white", grey: "gray", gray: "gray", red: "red", orange: "orange", yellow: "yellow", green: "green", blue: "blue", indigo: "indigo", violet: "violet"};
+    //Has a value of 1 when D is held down, a value of -1 when A is held down, and 0 if neither are held down
+    var horizontalInput = 0;
+    //Has a value of 1 when S is held down, a value of -1 when W is held down, and 0 if neither are held down
+    var verticalInput = 0;
+    //Holds values of held or not held down for each key
+    var Input = {};
+    //Use the Input.getKey("lowercase key name") to get returned if the key is pressed or not
+    Input.getKey = function getKey(key)
+    {
+      switch(key)
+      {
+        case "q":
+          return KeyStates.q;
+        case "w":
+          return KeyStates.w;
+        case "e":
+          return KeyStates.e;
+        case "r":
+          return KeyStates.r;
+        case "t":
+          return KeyStates.t;
+        case "y":
+          return KeyStates.y;
+        case "u":
+          return KeyStates.u;
+        case "i":
+          return KeyStates.i;
+        case "o":
+          return KeyStates.o;
+        case "p":
+          return KeyStates.p;
+        case "a":
+          return KeyStates.a;
+        case "s":
+          return KeyStates.s;
+        case "d":
+          return KeyStates.d;
+        case "f":
+          return KeyStates.f;
+        case "g":
+          return KeyStates.g;
+        case "h":
+          return KeyStates.h;
+        case "j":
+          return KeyStates.j;
+        case "k":
+          return KeyStates.k;
+        case "l":
+          return KeyStates.l;
+        case "z":
+          return KeyStates.z;
+        case "x":
+          return KeyStates.x;
+        case "c":
+          return KeyStates.c;
+        case "v":
+          return KeyStates.v;
+        case "b":
+          return KeyStates.b;
+        case "n":
+          return KeyStates.n;
+        case "m":
+          return KeyStates.m;
+        case "up":
+          return KeyStates.up;
+        case "right":
+          return KeyStates.right;
+        case "down":
+          return KeyStates.down;
+        case "left":
+          return KeyStates.left;
+        
+      }
+    };
+  }
+  
+  //Constant Updates
+  {
+    //Called every frame to control all the whole game
+    function draw()
+    {
+      DetermineInputValues();
+      Update();
+      CheckScripts();
+      if(updateColors)
+      {
+        UpdateColors();
+      }
+      ApplyCameraPosition();
+      ApplyCollisions();
+      ApplyGravity();
+      ApplyVelocities();
+      ApplyMoves();
+      ApplyPositions();
+    }
+    
+    //Called less often than draw() for function that aren't as important
+    function slowDraw()
+    {
+      if(turnOffNonVisible)
+      {
+        TurnOffNonVisible();
+      }
+    }
+  }
+  
+  //Gameobject Handling
+  {
+    //Holds all GameObjects in the game
+    var GameObjects = [];
+    
+    //Holds all script names in the game
+    var Scripts = [];
+    
+    //Used to pass into the AddComponent function
+    var rigidBody = "rigidBody"; //Gives gravity to an object
+    var boxCollider = "boxCollider"; //Allows object to collide with objects or be collided with
+    var script = "script"; //Gives a function for an object to use
+    
+    //Holds all static GameObjects
+    var StaticGameObjects = [];
+    
+    //Used to create objects. Requires name, x and y position, width and height, and color.
+    function Instantiate(name, x, y, width, height, color)
+    {
+      var ngo = {}; //Holds all GameObject info
+      ngo.name = name; //Name of the object
+      ngo.tag = "default"; //Can be used as an identifier 
+      ngo.active = true; //Whether this objects collider and rigidbody are calculated
+      ngo.staticPosition = false; //Whether this object stays with the camera
+      ngo.transform = {}; //Holds position and scale info
+      
+      ngo.transform.position = {x: x, y: y}; //X and y position of object
+      if(width > 320)
+      {
+        console.log("When instantiating, width cannot be greater than 320");
+        width = 320;
+      }
+      if(height > 450)
+      {
+        console.log("When instantiating, heigh cannot be greater than 450");
+        height = 450;
+      }
+      ngo.transform.scale = {width: width, height: height}; //Width and heigh of object
+      ngo.transform.position.direction = {x: 0, y: 0}; //Direction for this object to move. Seperate from velocity
+      //Sets direction for this object to move every update
+      ngo.transform.Move = function Move(x,y)
+      {
+        ngo.transform.position.direction.x = x;
+        ngo.transform.position.direction.y = y;
+      };
+      
+    
+      ngo.spriteRenderer = {color: color}; //Holds color of object
+      appendItem(GameObjects, ngo);
+      DrawObject(ngo);
+      ngo.variables = {};
+      
+      //Sets the object to active or not, with a optional delay to the change
+      ngo.SetActive =  function SetActive(on, time)
+      {
+        if(time == null)
+        {
+          ngo.active = on;
+          if(ngo.active)
+          {
+            setPosition(ngo.name, ngo.transform.position.x, ngo.transform.position.y);
+          }
+          else
+          {
+            setPosition(ngo.name, 1000, 1000);
+          }
+          UpdateActiveColliders();
+        }
+        else
+        {
+          time *= 1000;
+          var newLoop = timedLoop(time, function(){
+              ngo.active = on;
+              if(ngo.active)
+              {
+                setPosition(ngo.name, ngo.transform.position.x, ngo.transform.position.y);
+              }
+              else
+              {
+                setPosition(ngo.name, 1000, 1000);
+              }
+              UpdateActiveColliders();
+              stopTimedLoop(newLoop);
+          });
+        }
+      };
+      
+      //Allows for adding more components to object. For example: rigidbody, boxCollider, and script
+      ngo.AddComponent = function AddComponent(component, info)
+      {
+        switch(component)
+        {
+          case rigidBody:
+            if(ngo.Rigidbody != null)
+            {
+              console.log("You have already added a " + component + " to " + ngo.name + ". Do not add more than one");
+            }
+            else
+            {
+              ngo.Rigidbody = {};
+              ngo.Rigidbody.velocity = {x: 0, y: 0};
+              ngo.Rigidbody.useGravity = {gravity: true};
+              ngo.Rigidbody.SetVelocity = function AddComponent(x, y)
+              {
+                if(x != null && y != null)
+                {
+                  ngo.Rigidbody.velocity.x = x;
+                  ngo.Rigidbody.velocity.y = y;
+                }
+                else
+                {
+                  console.log("When using Rigidbody.SetVelocity(), you must input a x and y value");
+                }
+              };
+              ngo.Rigidbody.AddForce = function AddForce(x, y)
+              {
+                    x /= 10;
+                    y /= 10;
+                    var currentVelocityX = x;
+                    var currentVelocityY = -y;
+                    var resistance = 0.01;
+                    var newLoop = timedLoop(fixedTime, function(){
+                    currentVelocityX -= resistance;
+                    currentVelocityY += resistance;
+                    if(currentVelocityX > 0)
+                    {
+                      ngo.Rigidbody.velocity.x += currentVelocityX;
+                    }
+                    if(currentVelocityY < 0)
+                    {
+                      ngo.Rigidbody.velocity.y += currentVelocityY;
+                    }
+                    if(currentVelocityX <= 0 && currentVelocityY >= 0)
+                    {
+                      stopTimedLoop(newLoop);
+                    }
+                });
+              };
+            }
+            break;
+          case boxCollider:
+            if(ngo.BoxCollider != null)
+            {
+              console.log("You have already added a " + component + " to " + ngo.name + ". Do not add more than one");
+            }
+            else
+            {
+              ngo.BoxCollider = {x: ngo.transform.position.x, y: ngo.transform.position.y, width: ngo.transform.scale.width, height: ngo.transform.scale.height};
+              ngo.BoxCollider.collisions = {up: false, right: false, down: false, left: false};
+              ngo.BoxCollider.collisions.count = {};
+              ngo.BoxCollider.collisions.info = [];
+              ngo.BoxCollider.active = true;
+              ngo.BoxCollider.collisions.CompareTag = function CompareTag(tag)
+              {
+                for(var curcol = 0; curcol < ngo.BoxCollider.collisions.info.length; curcol++)
+                {
+                  var hitObj = ngo.BoxCollider.collisions.info[curcol];
+                  if(hitObj.tag == tag)
+                  {
+                    return true;
+                  }
+                }
+              };
+              ngo.BoxCollider.collisions.GetTag = function GetTag(tag)
+              {
+                for(var curcol = 0; curcol < ngo.BoxCollider.collisions.info.length; curcol++)
+                {
+                  var hitObj = ngo.BoxCollider.collisions.info[curcol];
+                  if(hitObj.tag == tag)
+                  {
+                    return ngo.BoxCollider.collisions.info[curcol];
+                  }
+                }
+              };
+            }
+            UpdateActiveColliders();
+            break;
+          case "script":
+            for(var scr = 0; scr < Scripts.length; scr++)
+            {
+              if(Scripts[scr].name == info)
+              {
+                appendItem(Scripts[scr].objects, FindGameObjectIndex(ngo));
+              }
+            }
+            break;
+        }
+      };
+      return ngo;
+    }
+    
+    //Creates a object that isn't added to GameObjects array, but also cannot have components, which can help with performance
+    function InstantiateStatic(x, y, width, height, color)
+    {
+      var name = "staticObject" + randomNumber(0, 100000);
+      appendItem(StaticGameObjects, name);
+      createCanvas(name);
+      setActiveCanvas(name);
+      setPosition(name,x, y);
+      setFillColor(color);
+      rect(0, 0, width, height);
+    }
+    
+    //Creates a map based on a string passed in with certain rules:
+      //"_" = floor
+      //" " = gap
+      //">" = move next builds right
+      //"<" = move next builds left
+      //"r" = chooses random choice from above
+      //"d" = repeates previous choices
+    function InstantiateString(map, color)
+    {
+      var chars = map.split('');
+      var x = 0;
+      var y = 200;
+      var width = 160;
+      var height = 50;
+      var col = (color == null ? Color.green : color);
+      for(var i =0; i < chars.length; i++)
+      {
+        switch(chars[i])
+        {
+          case "_":
+            var ifloor = Instantiate("floor", x, y, width, height, col);
+            ifloor.AddComponent(boxCollider);
+            ifloor.tag = "floor";
+            x += width;
+            break;
+          case " ":
+            x += (width / 2);
+            break;
+          case ">":
+            x += (width / 2);
+            break;
+          case "<":
+            x -= (width / 2);
+            break;
+          case "+":
+            y -= height;
+            break;
+          case "-":
+            y += height;
+            break;
+          case "d":
+            for(var j = 0; j < i; j++)
+            {
+              switch(chars[j])
+              {
+                case "_":
+                  var ifloor2 = Instantiate("floor", x, y, width, height, col);
+                  ifloor2.AddComponent(boxCollider);
+                  ifloor2.tag = "floor";
+                  x += width;
+                  break;
+                case " ":
+                  x += (width / 2);
+                  break;
+                case ">":
+                  x += (width / 2);
+                  break;
+                case "<":
+                  x -= (width / 2);
+                  break;
+                case "+":
+                  y -= height;
+                  break;
+                case "-":
+                  y += height;
+                  break;
+              }
+            }
+            break;
+          case "r":
+            var possibleChars = ["_", " ", ">", "<", "+", "-"];
+            var randomChar = possibleChars[randomNumber(0, possibleChars.length - 1)];
+            switch(randomChar)
+            {
+              case "_":
+                var ifloor3 = Instantiate("floor", x, y, width, height, col);
+                ifloor3.AddComponent(boxCollider);
+                ifloor3.tag = "floor";
+                x += width;
+                break;
+              case " ":
+                x += (width / 2);
+                break;
+              case ">":
+                x += (width / 2);
+                break;
+              case "<":
+                x -= (width / 2);
+                break;
+              case "+":
+                y -= height;
+                break;
+              case "-":
+                y += height;
+                break;
+              }
+            break;
+        }
+      }
+    }
+    
+    //Engine Function
+    {
+      //Returns index of a gameObject
+      function FindGameObjectIndex(go)
+      {
+        for(var i = 0; i < GameObjects.length; i++)
+        {
+          if(GameObjects[i].name == go.name)
+          {
+            return i;
+          }
+        }
+      }
+      
+      //Creates a canvas and draws an object on it
+      function DrawObject(go)
+      {
+        go.name = go.name + randomNumber(0, 100000);
+        createCanvas(go.name);
+        setActiveCanvas(go.name);
+        setPosition(go.name,go.transform.position.x, go.transform.position.y);
+        // setStrokeColor(go.spriteRenderer.color);
+        setFillColor(go.spriteRenderer.color);
+        rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+      }
+    }
+  }
+
+  //Script Handling
+  {
+    //Input name of a function as a string to be able to add that function as a component of gameObjects 
+    function CreateScript(info)
+    {
+      var newScript = {};
+      newScript.name = info;
+      newScript.objects = [];
+      appendItem(Scripts, newScript);
+    }
+    
+    //Input names of functions as a string array to be able to add them as a component of gameObjects 
+    function CreateScripts(info)
+    {
+      for(var i = 0; i < info.length; i++)
+      {
+        var newScript = {};
+        newScript.name = info[i];
+        newScript.objects = [];
+        appendItem(Scripts, newScript);
+      }
+    }
+    
+    //Engine Function
+    {
+      //Applies functions to gameobjects
+      function CheckScripts()
+      {
+        for(var i = 0; i < Scripts.length; i++)
+        {
+          for(var j = 0; j < Scripts[i].objects.length; j++)
+          {
+            if(GameObjects[Scripts[i].objects[j]].active)
+            {
+              var str = "(" + Scripts[i].objects[j] + ")";
+              eval(Scripts[i].name + str);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  //UI Handling
+  {
+    //Create text on screen. Must input text name, text to display, x and y position, and color
+    function CreateText(name, text, x, y, color)
+    {
+      var element = name + randomNumber(0,100000);
+      textLabel(element, text);
+      setProperty(element, "x", x);
+      setProperty(element, "y", y);
+      setProperty(element, "text-color", color);
+      return element;
+    }
+  }
+  
+  //Physics Handling
+  {
+    //Engine Functions
+    {
+      var ActiveColliders = []; //Colliders that are active in the game
+      //Updates which colliders are on a active game object
+      function UpdateActiveColliders()
+      {
+        ActiveColliders = [];
+        for(var i = 0; i < GameObjects.length; i++)
+        {
+          var obj = GameObjects[i];
+          if(obj.active)
+          {
+            if(obj.BoxCollider != null)
+            {
+              if(obj.BoxCollider.active)
+              {
+                appendItem(ActiveColliders, obj);  
+              }
+            }
+          }
+        }
+      }
+      
+      //Checks collision between objects. One of the objects must have a RigidBody to work
+      function ApplyCollisions()
+      {
+        for(var i = 0; i < ActiveColliders.length; i++)
+        {
+          var go = ActiveColliders[i];
+         
+            var col1 = go.BoxCollider;
+            col1.collisions.up = false;
+            col1.collisions.right = false;
+            col1.collisions.down = false;
+            col1.collisions.left = false;
+            col1.collisions.count = 0;
+            col1.collisions.info = [];
+            for(var j = 0; j < ActiveColliders.length; j++)
+            {
+              var go2 = ActiveColliders[j];
+              if(go.Rigidbody != null || go2.Rigidbody != null)
+              {
+                if(i != j)
+                {
+                  var col2 = go2.BoxCollider;
+                  if (
+                        col1.x <= col2.x + col2.width &&
+                        col1.x + col1.width >= col2.x &&
+                        col1.y <= col2.y + col2.height &&
+                        col1.y + col1.height >= col2.y
+                      ) 
+                      {
+                        col1.collisions.count+=1;
+                        appendItem(col1.collisions.info, go2);
+                        if((col2.y + (col2.height / 1.3)) <= col1.y)
+                        {
+                          col1.collisions.up = true;
+                          col2.collisions.down = true;
+                        }
+                        else if((col1.y + (col1.height / 1.3)) <= col2.y)
+                        {
+                          col1.collisions.down = true;
+                          col2.collisions.up = true;
+                        }
+                        else if((col2.x + (col2.width / 1.05)) <= col1.x)
+                        {
+                          col1.collisions.left = true;
+                          col2.collisions.right = true;
+                        }
+                        else if((col1.x + (col1.width)) <= col2.x)
+                        {
+                          col1.collisions.right = true;
+                          col2.collisions.left = true;
+                        }
+                      }
+                }
+              }
+              
+            }
+          
+        }
+      }
+      
+      var Gravity = 0.04; //Speed to accelerate GameObjects down
+      //Accelerates all GameObjects with RigidBodies down, unless they have rigidbody.useGravity set to false
+      function ApplyGravity()
+      {
+        for(var i = 0; i < GameObjects.length; i++)
+        {
+          if(GameObjects[i].Rigidbody != null && GameObjects[i].active)
+          {
+            var gorb = GameObjects[i].Rigidbody;
+            if(gorb.useGravity)
+            {
+              gorb.SetVelocity(gorb.velocity.x, gorb.velocity.y + Gravity);
+            }
+          }
+        }
+      }
+      
+      //Moves all objects the direction and magnitude of their velocity, unless they cannot move that direction
+      function ApplyVelocities()
+      {
+        for(var i = 0; i < GameObjects.length; i++)
+        {
+          var go = GameObjects[i];
+          if(go.Rigidbody != null && go.active)
+          {
+            if(go.BoxCollider != null)
+            {
+               if(go.BoxCollider.collisions.up && go.Rigidbody.velocity.y < 0)
+            {
+              go.Rigidbody.velocity.y = 0;
+            }
+            if(go.BoxCollider.collisions.right && go.Rigidbody.velocity.x > 0)
+            {
+              go.Rigidbody.velocity.x = 0;
+            }
+            if(go.BoxCollider.collisions.down && go.Rigidbody.velocity.y > 0)
+            {
+              go.Rigidbody.velocity.y = 0;
+            }
+            if(go.BoxCollider.collisions.left && go.Rigidbody.velocity.x < 0)
+            {
+              go.Rigidbody.velocity.x = 0;
+            }
+            }
+           
+            
+            go.transform.position.x += go.Rigidbody.velocity.x;
+            go.transform.position.y += go.Rigidbody.velocity.y;
+          }
+        }
+      }
+      
+      //Moves all objects the object.transform.position.direction
+      function ApplyMoves()
+      {
+        for(var i = 0; i < GameObjects.length; i++)
+        {
+          var go = GameObjects[i];
+          if(go.transform.position.direction.x != 0)
+          {
+            go.transform.position.x += go.transform.position.direction.x;
+          }
+          if(go.transform.position.direction.y != 0)
+          {
+             go.transform.position.y += go.transform.position.direction.y;
+          }
+        }
+      }
+      
+      //Sets each canvas to the location of their gameObject
+      function ApplyPositions()
+      {
+        for(var i = 0; i < GameObjects.length; i++)
+        {
+          var go = GameObjects[i];
+          if(go.active)
+          {
+            setPosition(go.name, go.transform.position.x, go.transform.position.y);
+            var goCol = go.BoxCollider;
+            if(goCol != null)
+            {
+              goCol.x = go.transform.position.x;
+              goCol.y = go.transform.position.y;
+              goCol.width = go.transform.scale.width;
+              goCol.height = go.transform.scale.height;
+            }
+          }
+          
+        }
+      }
+    }
+  }
+  
+  //Camera
+  {
+    var cameraOffset = {x: 160, y: 200}; //Constant used to center camera
+    var camera = Instantiate("camera", cameraOffset.x,cameraOffset.y,0,0,"black"); //Create a object to be used as a camera
+    
+    //Engine Function
+    {
+      //Moves all objects the opposite direction the camera is trying to move in order to seem like the camera is moving
+      function ApplyCameraPosition()
+      {
+        for(var i = 0; i < GameObjects.length; i++)
+        {
+          var go = GameObjects[i];
+          if(go != camera && !go.staticPosition)
+          {
+            go.transform.position.x -= camera.transform.position.x;
+            go.transform.position.x += cameraOffset.x;
+            go.transform.position.y -= camera.transform.position.y;
+            go.transform.position.y += cameraOffset.y;
+          }
+        }
+        for(var j = 0; j < StaticGameObjects.length; j++)
+        {
+          var sgo = StaticGameObjects[j];
+          if(sgo != camera)
+          {
+            setPosition(sgo, getProperty(sgo, "x") - camera.transform.position.x +  cameraOffset.x, getProperty(sgo, "y") - camera.transform.position.y +  cameraOffset.y);
+          }
+        }
+      }
+    }
+  }
+  
+  //Input Handling
+  {
+   
+    
+    var xInput = 0;
+    var yInput = 0;
+    
+    //Used to ensure smooth use of WASD
+    var heldDownW = false;
+    var heldDownS = false;
+    var wHeldFirst = true;
+    var heldDownD = false;
+    var heldDownA = false;
+    var dHeldFirst = true;
+    
+    //Checks for inputs
+    onEvent("screen1", "keyup", function (keys) {
+      if(keys.key == "w")
+      {
+       heldDownW = false;
+      }
+      else if(keys.key == "s")
+      {
+       heldDownS = false;
+      }
+    });
+    onEvent("screen1", "keydown", function (keys) {
+      if(keys.key == "w")
+      {
+        if(!heldDownS)
+        {
+          wHeldFirst = true;
+        }
+        else{
+          wHeldFirst = false;
+        }
+        heldDownW = true;
+      }
+      else if(keys.key == "s")
+      {
+        if(!heldDownW)
+        {
+          wHeldFirst = false;
+        }
+         else{
+          wHeldFirst = true;
+        }
+        heldDownS = true;
+      }
+    });
+    onEvent("screen1", "keyup", function (keys) {
+      if(keys.key == "d")
+      {
+       heldDownD = false;
+      }
+      else if(keys.key == "a")
+      {
+       heldDownA = false;
+      }
+    });
+    onEvent("screen1", "keydown", function (keys) {
+      if(keys.key == "d")
+      {
+        if(!heldDownA)
+        {
+          dHeldFirst = true;
+        }
+        else{
+          dHeldFirst = false;
+        }
+        heldDownD = true;
+      }
+      else if(keys.key == "a")
+      {
+        if(!heldDownD)
+        {
+          dHeldFirst = false;
+        }
+         else{
+          dHeldFirst = true;
+        }
+        heldDownA = true;
+      }
+    });
+    
+    //Engine Function
+    {
+      //Determines values for horizontal and vertical input
+      function DetermineInputValues()
+      {
+        xInput = 0;
+         if(heldDownD)
+        {
+          xInput = 1;
+        }
+        if(heldDownA){
+          xInput = -1;
+        }
+        if(heldDownD && heldDownA && dHeldFirst)
+        {
+          xInput = -1;
+        }
+        if(heldDownD && heldDownA && !dHeldFirst)
+        {
+          xInput = 1;
+        }
+        yInput = 0;
+         if(heldDownW)
+        {
+          yInput = -1;
+        }
+        if(heldDownS){
+          yInput = 1;
+        }
+        if(heldDownW && heldDownS && wHeldFirst)
+        {
+          yInput = 1;
+        }
+        if(heldDownW && heldDownS && !wHeldFirst)
+        {
+          yInput = -1;
+        }
+        
+        horizontalInput = xInput;
+        verticalInput = yInput;
+      }
+    }
+    var KeyStates = {q: false, w: false, e: false,r: false,t: false,y: false,u: false,i: false,o: false,p: false,a: false,s: false,d: false,f: false,g: false,h: false,j: false,k: false,l: false,z: false,x: false,c: false,v: false,b: false,n: false,m: false, up: false, right: false, down: false, left: false};
+    
+    //Checks for inputs
+    onEvent("screen1", "keydown", function (keys) {
+      KeyStates.q = keys.key == "q";
+      KeyStates.w = keys.key == "w";
+      KeyStates.e = keys.key == "e";
+      KeyStates.r = keys.key == "r";
+      KeyStates.t = keys.key == "t";
+      KeyStates.y = keys.key == "y";
+      KeyStates.u = keys.key == "u";
+      KeyStates.i = keys.key == "i";
+      KeyStates.o = keys.key == "o";
+      KeyStates.p = keys.key == "p";
+      KeyStates.a = keys.key == "a";
+      KeyStates.s = keys.key == "s";
+      KeyStates.d = keys.key == "d";
+      KeyStates.f = keys.key == "f";
+      KeyStates.g = keys.key == "g";
+      KeyStates.h = keys.key == "h";
+      KeyStates.j = keys.key == "j";
+      KeyStates.k = keys.key == "k";
+      KeyStates.l = keys.key == "l";
+      KeyStates.z = keys.key == "z";
+      KeyStates.x = keys.key == "x";
+      KeyStates.c = keys.key == "c";
+      KeyStates.v = keys.key == "v";
+      KeyStates.b = keys.key == "b";
+      KeyStates.n = keys.key == "n";
+      KeyStates.m = keys.key == "m";
+      KeyStates.up = keys.key == "up";
+      KeyStates.right = keys.key == "right";
+      KeyStates.down = keys.key == "down";
+      KeyStates.left = keys.key == "left";
+    });
+    onEvent("screen1", "keyup", function (keys) {
+      KeyStates.q = !keys.key == "q";
+      KeyStates.w = !keys.key == "w";
+      KeyStates.e = !keys.key == "e";
+      KeyStates.r = !keys.key == "r";
+      KeyStates.t = !keys.key == "t";
+      KeyStates.y = !keys.key == "y";
+      KeyStates.u = !keys.key == "u";
+      KeyStates.i = !keys.key == "i";
+      KeyStates.o = !keys.key == "o";
+      KeyStates.p = !keys.key == "p";
+      KeyStates.a = !keys.key == "a";
+      KeyStates.s = !keys.key == "s";
+      KeyStates.d = !keys.key == "d";
+      KeyStates.f = !keys.key == "f";
+      KeyStates.g = !keys.key == "g";
+      KeyStates.h = !keys.key == "h";
+      KeyStates.j = !keys.key == "j";
+      KeyStates.k = !keys.key == "k";
+      KeyStates.l = !keys.key == "l";
+      KeyStates.z = !keys.key == "z";
+      KeyStates.x = !keys.key == "x";
+      KeyStates.c = !keys.key == "c";
+      KeyStates.v = !keys.key == "v";
+      KeyStates.b = !keys.key == "b";
+      KeyStates.n = !keys.key == "n";
+      KeyStates.m = !keys.key == "m";
+      KeyStates.up = !keys.key == "up";
+      KeyStates.right = !keys.key == "right";
+      KeyStates.down = !keys.key == "down";
+      KeyStates.left = !keys.key == "left";
+    });
+  }
+
+  //Optional Functions
+  {
+    var updateColors = false; //Whether or not to update colors every frame
+    
+    var turnOffNonVisible = true; //Turn off colliders when they are off screen, then turn them back on when they are on screen again
+    var cameraTurnOffDistance = 250; //Distance from camera to turn off objects
+    
+    //Engine Functions
+    {
+      //Changes color of objects to their spriteRenderer.color every frame
+      function UpdateColors()
+      {
+        for(var i = 0; i < GameObjects.length; i++)
+        {
+          var go = GameObjects[i];
+          setActiveCanvas(go.name);
+          clearCanvas(go.name);
+          setPosition(go.name,go.transform.position.x, go.transform.position.y);
+          setFillColor(go.spriteRenderer.color);
+          rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+        }
+      }
+      
+      //Turns off objects that are a certain distance from camera
+      function TurnOffNonVisible()
+      {
+        for(var i = 0; i < GameObjects.length; i++)
+        {
+          var go = GameObjects[i];
+          if(go != camera && go.BoxCollider != null)
+          {
+            if(DistanceBetween(go, camera) > cameraTurnOffDistance)
+            {
+              go.BoxCollider.active = false;  
+            }
+            else
+            {
+              go.BoxCollider.active = true;  
+            }
+          }
+          UpdateActiveColliders();
+        }
+      }
+    }
+  }
+
+  //Useful Functions
+  {
+    //Waits inputed time, then calls the function inputed. function inputed should be a string
+    function Wait(timeout, functionName)
+    {
+      timeout *= 1000;
+      var newLoop = timedLoop(timeout, function(){
+          eval(functionName + "()");
+          stopTimedLoop(newLoop);
+      });
+    }
+    
+    //Forever Waits inputed time, then calls the function inputed. function inputed should be a string
+    function ForeverLoop(timeout, functionName)
+    {
+      timedLoop(timeout * 1000, function(){eval(functionName + "()");});
+    }
+    
+    //Checks distance between center of two objects
+    function DistanceBetween(go1, go2)
+    {
+      if(go1 != null && go2 != null)
+      {
+        var x1 = go1.transform.position.x + (go1.transform.scale.width / 2);
+        var x2 = go2.transform.position.x + (go2.transform.scale.width / 2);
+        var y1 = go1.transform.position.y + (go1.transform.scale.height / 2);
+        var y2 = go2.transform.position.y + (go2.transform.scale.height / 2);
+        
+        var xdist = Math.abs(x1 - x2);
+        var ydist = Math.abs(y1 - y2);
+        var xsqr = xdist * xdist;
+        var ysqr = ydist * ydist;
+        
+        var xdyd = xsqr + ysqr;
+        
+        var sqrtxy = Math.sqrt(xdyd);
+        
+        return sqrtxy;
+      }
+    }
+    
+    //Sets background color to inputed color
+    function SetBackground(color)
+    {
+      setProperty("screen1", "background-color", color);
+    }
+    
+    //Creates a simple player object
+    function CreatePlayer()
+    {
+      var simplePlayer = Instantiate("simplePlayer", 50, 50, 50, 50, Color.blue);
+      {
+        CreateScript("SimplePlayerScript");
+        simplePlayer.AddComponent(rigidBody);
+        simplePlayer.AddComponent(boxCollider);
+        simplePlayer.tag = "player";
+        simplePlayer.AddComponent(script, "SimplePlayerScript");
+        simplePlayer.variables.speed = 1.5;
+        simplePlayer.variables.jump = 3;
+        simplePlayer.variables.canJump = true;
+        simplePlayer.variables.canResetJump = false;
+        simplePlayer.variables.canShoot = true;
+        simplePlayer.variables.reloading = false;
+      }
+    }
+    //Used by CreatePlayer()
+    function SimplePlayerScript(index)
+    {
+      var simplePlayer = GameObjects[index];
+      var simplerb = simplePlayer.Rigidbody;
+      simplerb.SetVelocity(horizontalInput * simplePlayer.variables.speed, simplerb.velocity.y);
+       
+      if(verticalInput < 0 &&  simplePlayer.variables.canJump && simplePlayer.BoxCollider.collisions.down)
+      {
+        simplerb.velocity.y = 0;
+        simplerb.AddForce(0, simplePlayer.variables.jump);
+        simplePlayer.variables.canJump = false;
+        simplePlayer.variables.canResetJump = false;
+      }
+      if(!simplePlayer.BoxCollider.collisions.down)
+      {
+        simplePlayer.variables.canResetJump = true;
+      }
+    
+      if(simplePlayer.BoxCollider.collisions.down && simplePlayer.variables.canResetJump)
+      {
+        simplePlayer.variables.canJump = true;
+        simplePlayer.variables.canResetJump = false;
+      }
+      
+      camera.transform.position.x = simplePlayer.transform.position.x;
+    }
+    
+    //Creates a simple enemy object
+    function CreateEnemy()
+    {
+       var enemy = Instantiate("enemy", 200, 50, 50, 50, Color.red);
+      {
+        CreateScript("SimpleEnemyScript");
+        enemy.AddComponent(rigidBody);
+        enemy.AddComponent(boxCollider);
+        enemy.tag = "enemy";
+        enemy.AddComponent(script, "SimpleEnemyScript");
+        enemy.variables.right = false;
+        enemy.variables.changeDir = false;
+        enemy.variables.calledChange = false;
+        enemy.variables.changeTime = 2;
+        enemy.variables.speed = 0.3;
+      }
+    }
+    
+    //Used by CreateEnemy()
+    function SimpleEnemyScript(index)
+    {
+      var simpleEnemy = GameObjects[index];
+      var simpleerb = simpleEnemy.Rigidbody;
+      if(simpleEnemy.variables.right)
+      {
+        simpleerb.SetVelocity(simpleEnemy.variables.speed, simpleerb.velocity.y);
+      }
+      else
+      {
+         simpleerb.SetVelocity(-simpleEnemy.variables.speed, simpleerb.velocity.y);
+      }
+      if(simpleEnemy.variables.changeDir)
+      {
+        simpleEnemy.variables.changeDir = false;
+        simpleEnemy.variables.right = !simpleEnemy.variables.right;
+      }
+      else
+      {
+        if(!simpleEnemy.variables.calledChange)
+        {
+          simpleEnemy.variables.calledChange = true;
+          var newLoop = timedLoop(simpleEnemy.variables.changeTime * 1000, function(){
+          simpleEnemy.variables.changeDir = true;
+          simpleEnemy.variables.calledChange = false;
+          stopTimedLoop(newLoop);
+          });
+        }
+      }
+    }
+  }
+  
+  //Starting Game Engine
+  {
+    Start();
+    var fixedTime = 2; //How often draw function is called
+    timedLoop(fixedTime, function(){draw();});
+    var slowTime = 100; //How often slowDraw function is called
+    timedLoop(slowTime, function(){slowDraw();});
+  }
+}
