@@ -1,0 +1,14 @@
+Decleration
+  Gameobject.AddComponent(component, string additionalInfo)
+Parameters
+  - component: rigidBody, boxCollider, or script.
+  - additionalInfo: Only needed when adding a script. Name of function for object to use
+ 
+Returns
+  No return value
+
+Description
+  Adds a component to a object in game.
+   - Rigidbody: Gives physics to a object, allowing it to have a velocity and use gravity.
+   - Box Collider: Gives a hit box to an object, allowing it to interact with other objects. Two objects will only collide if one of them has a rigidbody, and both have a collider.
+   - Script: Allows a gameobject to run a function every frame.
