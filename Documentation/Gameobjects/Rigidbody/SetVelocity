@@ -1,0 +1,12 @@
+Decleration
+ GameObject.Rigidbody.SetVelocity(float x, float y);
+
+Parameters
+  - x: Horizontal speed to set object.
+  - y: Vertical speed to set object.
+
+Returns
+  No return value.
+
+Description
+  Sets velocity of an object to a x and y value. This will be how many pixels in a direction the gameobject moves every frame.
