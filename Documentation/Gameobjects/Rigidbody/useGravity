@@ -1,0 +1,8 @@
+Decleration
+  GameObject.Rigidbody.useGravity = bool use;
+
+Parameters
+  - use: Whether to apply gravity to object or not.
+
+Description
+  Determines if object will have gravity applied to it or not. Initialized to true.
