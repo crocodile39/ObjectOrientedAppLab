@@ -1,0 +1,12 @@
+Decleration
+  GameObject.Rigidbody.AddForce(float x, float y);
+
+Parameters
+  - x: Horizontal direction and magnitude of force.
+  - y: Vertical direction and magnitude of force.
+
+Returns
+  No return value.
+
+Description
+  Pushes object in x and y direction.
