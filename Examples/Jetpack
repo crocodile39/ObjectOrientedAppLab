@@ -1,4 +1,4 @@
-var called = false;
+//Objects
 var player;
 var score = 0;
 var scoreText;
@@ -6,7 +6,14 @@ var loseText;
 var block;
 var jetPack;
 var zaps = [];
-var missle;
+var missles = [];
+
+//Settings
+var minimumTrapTime = 2500;
+var maximumTrapTime = 6000;
+var minimumTrapCount = 1;
+var maximumTrapCount = 2;
+
 //Called once before the first frame
 function Start()
 {
@@ -37,17 +44,23 @@ function Start()
   setProperty(loseText, "font-size", 36);
   setProperty(loseText, "hidden", true);
 
-  block = Instantiate("block", -160, 160, 20, randomNumber(25, 75), Color.black, true);
+  block = Instantiate("block", -160, 160, 20, randomNumber(45, 95), Color.yellow, true);
   block.AddComponent(boxCollider);
   block.tag = "block";
   
   //Missles
-  missle = Instantiate("block", -160, 160, 60, 40, Color.grey, false);
-  missle.AddComponent(boxCollider);
-  missle.tag = "block";
-  missle.variables.warning = CreateText("warning", "!", 285, missle.transform.position.y - 75, Color.red);
-  setProperty(missle.variables.warning, "font-size", 50);
-
+  for(var h = 0; h < 4; h++)
+  {
+    var missle = Instantiate("block", -160, 160, 60, 40, Color.black, false);
+    missle.AddComponent(boxCollider);
+    missle.tag = "block";
+    missle.variables.warning = CreateText(missle.name, "!", 285, missle.transform.position.y - 75, Color.red);
+    setProperty(missle.variables.warning, "hidden", true);
+    setProperty(missle.variables.warning, "font-size", 50);
+    setProperty(missle.variables.warning, "x", 285 - (57 * h));
+    appendItem(missles, missle);
+  }
+  
   
   //Zap Traps
   for(var i = 0; i < 4; i++)
@@ -62,6 +75,14 @@ function Start()
   
   Respawn();
   NewTrap();
+  
+  timedLoop(5500, function blockUpdates(){
+    if(player.transform.position.x > block.transform.position.x + 200)
+    {
+      block.transform.position.x = player.transform.position.x + randomNumber(450, 700);
+      block.transform.position.y = randomNumber(0,450 - block.transform.scale.height);
+    }
+  });
 }
 //Called every frame
 function Update()
@@ -69,30 +90,51 @@ function Update()
   // player.variables.speed += 0.001;
 }
 
+
 function NewTrap()
 {
-  var waitTime = randomNumber(2500, 6000);
+  var waitTime = randomNumber(minimumTrapTime, maximumTrapTime);
   var trapSpawn = timedLoop(waitTime, function()
   {
-    var trapChoice = randomNumber(0, 1);
-    switch(trapChoice)
+    var trapCount = randomNumber(minimumTrapCount, maximumTrapCount);
+    var possibleTraps = [0, 1];
+    for(var i = 0; i < trapCount; i++)
     {
-      case 0:
-        ZapTrap();
-        break;
-      case 1:
-        Missles();
-        break;
+      var trapIndex = randomNumber(0, possibleTraps.length - 1);
+      var trapChoice = possibleTraps[trapIndex];
+      removeItem(possibleTraps, trapIndex);
+      switch(trapChoice)
+      {
+        case 0:
+          ZapTrap();
+          break;
+        case 1:
+          MissleTrap();
+          break;
+      }
     }
+    var callNewTrap = timedLoop(6000, function()
+    {
+      NewTrap();
+      stopTimedLoop(callNewTrap);
+    });
     stopTimedLoop(trapSpawn);
   });
   
 }
-
-function Missles()
+function MissleTrap()
 {
+  var count = randomNumber(1, missles.length);
+  for(var i = 0; i < count; i++)
+  {
+    Missle(i);
+  }
+}
+function Missle(i)
+{
+  var missle = missles[i];
   var blinkCount = 0;
-  var totalBlinks = 20;
+  var totalBlinks = randomNumber(10, 30);
   var on = true;
   missle.transform.position.y = randomNumber(90, 360);
   setProperty(missle.variables.warning, "y", missle.transform.position.y - 75);
@@ -106,7 +148,6 @@ function Missles()
       setProperty(missle.variables.warning, "hidden", true);
       missle.transform.position.x = 360;
       missle.transform.Move(-3, 0);
-      NewTrap();
       stopTimedLoop(blinkWarning);
     }
   });
@@ -134,14 +175,14 @@ function ZapTrap()
   {
     zaps[i].active = false;
   }
-  var a = 0.1;
+  var a = 0.01;
   var charge = timedLoop(10, function(){
       for(var i = 0; i < zaps.length; i++)
       {
         zaps[i].spriteRenderer.color = rgb(255, 0, 0, a);
       }
-      a += 0.0005;
-      if(a > 0.3)
+      a += 0.001;
+      if(a > 0.25)
       {
          var finishZap = timedLoop(1000, function(){
               for(var i = 0; i < zaps.length; i++)
@@ -156,7 +197,6 @@ function ZapTrap()
                     zaps[i].active = false;
                     zaps[i].transform.position.y = 1000;
                   }
-                  NewTrap();
                   stopTimedLoop(endZap);
               });
               stopTimedLoop(finishZap);
@@ -170,7 +210,19 @@ function ZapTrap()
 function PlayerScript()
 {
   var rb = player.Rigidbody;
-  player.variables.grounded = player.BoxCollider.collisions.down;
+  UpdateJetPack(rb);
+   
+  if(player.BoxCollider.collisions.CompareTag("block") && !player.variables.dead)
+  {
+    Die();
+  }
+
+  camera.transform.position.x = player.transform.position.x + 50;
+  score += 0.01;
+  setProperty(scoreText, "text", Math.round(score));
+}
+function UpdateJetPack(rb)
+{
   if(!player.variables.dead)
   {
     rb.SetVelocity(player.variables.speed, rb.velocity.y);
@@ -184,19 +236,6 @@ function PlayerScript()
     jetPack.variables.fire.transform.position.y = jetPack.transform.position.y + 25;
     jetPack.variables.fire.transform.scale.height = Math.min(-(Math.pow(player.Rigidbody.velocity.y, 3)) - (verticalInput * 7), 15);
   }
-   
-  if(player.BoxCollider.collisions.CompareTag("block") && !player.variables.dead)
-  {
-    Die();
-  }
-  // if(player.transform.position.x > block.transform.position.x + 200)
-  // {
-  //   block.transform.position.x += randomNumber(450, 700);
-  //   block.transform.position.y = randomNumber(0,450 - block.transform.scale.height);
-  // }
-  camera.transform.position.x = player.transform.position.x + 50;
-  score += player.Rigidbody.velocity.x;
-  setProperty(scoreText, "text", Math.round(score / 100));
 }
 function Die()
 {
@@ -228,6 +267,10 @@ function SetColorBlack()
 function Respawn()
 {
   score = 0;
+  block.transform.position.x = player.transform.position.x + randomNumber(450, 700);
+  block.transform.position.y = randomNumber(0,450 - block.transform.scale.height);
+  
+  
   player.transform.position.y = 225;
   player.transform.scale.height = 30;
   player.transform.scale.width = 30;
