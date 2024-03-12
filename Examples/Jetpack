@@ -8,6 +8,7 @@ var jetPack;
 var zaps = [];
 var missles = [];
 var coin;
+var powerUp;
 
 //Settings
 var minimumTrapTime = 2500;
@@ -22,11 +23,11 @@ function Start()
   var floor = Instantiate("floor", 0, 440, 320, 10, Color.black, true, true);
   floor.AddComponent(boxCollider);
   floor.staticPosition = true;
-  floor.tag = "block";
+  floor.tag = "boundry";
   var roof = Instantiate("roof", 0, -1, 320, 10, Color.black, true, true);
   roof.AddComponent(boxCollider);
   roof.staticPosition = true;
-  roof.tag = "block";
+  roof.tag = "boundry";
 
   player = Instantiate("player", 30, 100, 30, 30, Color.blue, true, true);
   CreateScript("PlayerScript");
@@ -37,9 +38,13 @@ function Start()
   player.variables.speed = 2;
   player.variables.jetSpeed = 0.1;
   player.variables.dead = false;
+  player.variables.multipliers = [];
+  player.variables.multiplierActive = false;
+  player.variables.shieldActive = false;
+
+
   jetPack = Instantiate("jetPack", 30, 100, 10, 30, Color.grey, true, true);
   jetPack.variables.fire = Instantiate("jetPack", 30, 100, 10, 10, Color.red, true, true);
-
 
   scoreText = CreateText("score", "Score: " + score, -10, -15, Color.blue);
   loseText = CreateText("lose", "YOU LOSE", -10, 200, Color.red);
@@ -50,6 +55,7 @@ function Start()
   block.AddComponent(boxCollider);
   block.tag = "block";
   
+  //Traps
   //Missles
   for(var h = 0; h < 3; h++)
   {
@@ -63,8 +69,7 @@ function Start()
     appendItem(missles, missle);
   }
   
-  
-  //Zap Traps
+  //Zaps
   for(var i = 0; i < 4; i++)
   {
     var zap = Instantiate("zap", 0, 1320, 320, 10, Color.red, false, true);
@@ -82,7 +87,24 @@ function Start()
   setProperty(coin.variables.text, "font-size", 12);
   coin.transform.position.x = player.transform.position.x + randomNumber(450, 700);
   coin.transform.position.y = randomNumber(35,410);
-
+  
+  //PowerUps
+  powerUp = Instantiate("powerUp", 320, 225, 30, 30, rgb(0,250,0,0.2), false, false);
+  powerUp.variables.up = false;
+  powerUp.variables.xSpeed = 1.25;
+  powerUp.variables.ySpeed = 1.25;
+  powerUp.variables.time = 12;
+  CreateScript("PowerUpMovement");
+  powerUp.AddComponent(script, "PowerUpMovement");
+  powerUp.transform.Move(powerUp.variables.xSpeed, powerUp.variables.ySpeed);
+  powerUp.variables.text = CreateText("pointMultiplierText", "2X", -20, -2000, Color.black);
+  setProperty(powerUp.variables.text, "font-size", 12);
+  setProperty(powerUp.variables.text, "text-align", "center");
+  powerUp.variables.display = CreateText("pointMultiplierDisplay", "2X",280, -125, Color.green);
+  powerUp.variables.aura = Instantiate("aura", player.transform.position.x, player.transform.position.y, 50,50, rgb(0,0,0,0),false,false);
+  powerUp.variables.type = "multiplier";
+  SetRandomPowerUp();
+  
   Respawn();
   NewTrap();
 }
@@ -100,11 +122,96 @@ function Update()
     coin.transform.position.x = player.transform.position.x + randomNumber(450, 700);
     coin.transform.position.y = randomNumber(35,410);
   }
+  if(player.transform.position.x > powerUp.transform.position.x + 750)
+  {
+    powerUp.transform.position.x = player.transform.position.x + randomNumber(450, 1000);
+    powerUp.transform.position.y = randomNumber(60,390);
+  }
   setProperty(coin.variables.text, "x", coin.transform.position.x - 184);
   setProperty(coin.variables.text, "y", coin.transform.position.y - 99);
-
+  powerUp.variables.aura.transform.position.x = player.transform.position.x - (player.transform.scale.width / 2) + 5;
+  powerUp.variables.aura.transform.position.y = player.transform.position.y - (player.transform.scale.height / 2) + 5;
 }
 
+function SetRandomPowerUp()
+{
+  var randomChoice = randomNumber(0,1);
+  switch(randomChoice)
+  {
+    case 0:
+      powerUp.variables.type = "multiplier";
+      setProperty(powerUp.variables.text, "text", "2X");
+      powerUp.spriteRenderer.color = Color.yellow;
+      break;
+    case 1:
+      powerUp.variables.type = "shield";
+      setProperty(powerUp.variables.text, "text", " ");
+      powerUp.spriteRenderer.color = Color.blue;
+      break;
+  }
+}
+function PowerUpMovement()
+{
+  var t = powerUp.transform;
+  if(powerUp.variables.up && t.position.y < 50)
+  {
+    powerUp.variables.up = false;
+    powerUp.transform.Move(powerUp.variables.xSpeed, powerUp.variables.ySpeed);
+  }
+  else if(!powerUp.variables.up && t.position.y > 400)
+  {
+    powerUp.variables.up = true;
+    powerUp.transform.Move(powerUp.variables.xSpeed, -powerUp.variables.ySpeed);
+  }
+  setProperty(powerUp.variables.text, "x", powerUp.transform.position.x - 232);
+  setProperty(powerUp.variables.text, "y", powerUp.transform.position.y - 95);
+}
+function RemoveMultiplier()
+{
+  removeItem(player.variables.multipliers, 0);
+}
+function ApplyShield()
+{
+  player.variables.shieldActive = true;
+  for(var i = 0; i < zaps.length; i++)
+  {
+    zaps[i].BoxCollider.off = true;
+  }
+  for(var j = 0; j < missles.length; j++)
+  {
+    missles[j].BoxCollider.off = true;
+  }
+  block.BoxCollider.off = true;
+  powerUp.variables.aura.spriteRenderer.color = rgb(0,0,255,0.2);
+}
+function RemoveShield()
+{
+  var aValue =  0.2;
+  var fadeSpeed = 0.01;
+  var blinkShield = timedLoop(300, function()
+  {
+    powerUp.variables.aura.spriteRenderer.color = rgb(0,0,255, aValue);
+    if(aValue <= 0)
+    {
+      for(var i = 0; i < zaps.length; i++)
+      {
+        zaps[i].BoxCollider.off = false;
+      }
+      for(var j = 0; j < missles.length; j++)
+      {
+        missles[j].BoxCollider.off = false;
+      }
+      block.BoxCollider.off = false;
+      powerUp.variables.aura.spriteRenderer.color = rgb(0,0,0,0);
+      player.variables.shieldActive = false;
+      stopTimedLoop(blinkShield);
+    }
+    else
+    {
+      aValue -= fadeSpeed;
+    }
+  });
+}
 
 function NewTrap()
 {
@@ -242,24 +349,49 @@ function PlayerScript()
   
   if(player.BoxCollider.collisions.count > 0 && !player.variables.dead)
   {
-    if(player.BoxCollider.collisions.CompareTag("block"))
+    if(player.BoxCollider.collisions.CompareTag("block") || player.BoxCollider.collisions.CompareTag("boundry"))
     {
-      Die();
+      if(!player.variables.shieldActive)
+      {
+        Die();
+      }
     }
   }
   if(DistanceBetween(player, coin) < 30)
   {
-      score += 10;
-      coin.transform.position.x = player.transform.position.x + randomNumber(450, 700);
-      coin.transform.position.y = randomNumber(0,410);
-      SetScoreTextYellow();
-      Wait(0.2, "SetScoreTextBlack");
-      Wait(0.4, "SetScoreTextYellow");
-      Wait(0.6, "SetScoreTextBlack");
-      Wait(0.8, "SetScoreTextYellow");
-      Wait(1, "SetScoreTextBlack");
+    var coinValue = 10;
+    if(player.variables.multiplierActive)
+    {
+      coinValue *= 2;
+    }
+    score += coinValue;
+    coin.transform.position.x = player.transform.position.x + randomNumber(450, 700);
+    coin.transform.position.y = randomNumber(0,410);
+    SetScoreTextYellow();
+    Wait(0.2, "SetScoreTextBlack");
+    Wait(0.4, "SetScoreTextYellow");
+    Wait(0.6, "SetScoreTextBlack");
+    Wait(0.8, "SetScoreTextYellow");
+    Wait(1, "SetScoreTextBlack");
   }
-  
+  if(DistanceBetween(player, powerUp) < 40)
+  {
+    powerUp.transform.position.y = -1000;
+    switch(powerUp.variables.type)
+    {
+      case "multiplier":
+        appendItem(player.variables.multipliers, true);
+        Wait(powerUp.variables.time, "RemoveMultiplier");
+        break;
+      case "shield":
+        ApplyShield();
+        Wait(powerUp.variables.time, "RemoveShield");
+        break;
+    }
+    SetRandomPowerUp();
+  }
+  player.variables.multiplierActive = (player.variables.multipliers.length > 0);
+  setProperty(powerUp.variables.display, "hidden", !player.variables.multiplierActive);
   camera.transform.position.x = player.transform.position.x + 50;
   score += 0.01;
   setProperty(scoreText, "text", Math.round(score));
@@ -600,7 +732,7 @@ function SetDeadTrue()
             }
             else
             {
-              ngo.BoxCollider = {x: ngo.transform.position.x, y: ngo.transform.position.y, width: ngo.transform.scale.width, height: ngo.transform.scale.height};
+              ngo.BoxCollider = {x: ngo.transform.position.x, y: ngo.transform.position.y, width: ngo.transform.scale.width, height: ngo.transform.scale.height, off : false};
               ngo.BoxCollider.collisions = {up: false, right: false, down: false, left: false};
               ngo.BoxCollider.collisions.count = {};
               ngo.BoxCollider.collisions.info = [];
@@ -868,7 +1000,7 @@ function SetDeadTrue()
           {
             if(obj.BoxCollider != null)
             {
-              if(obj.BoxCollider.active)
+              if(obj.BoxCollider.active && !obj.BoxCollider.off)
               {
                 appendItem(ActiveColliders, obj);  
               }
@@ -1299,7 +1431,7 @@ function SetDeadTrue()
         for(var i = 0; i < GameObjects.length; i++)
         {
           var go = GameObjects[i];
-          if(go != camera&& go.BoxCollider != null)
+          if(go != camera&& go.BoxCollider != null && go.tag != "player")
           {
             if(DistanceBetween(go, camera) > cameraTurnOffDistance)
             {
@@ -1310,8 +1442,8 @@ function SetDeadTrue()
               go.BoxCollider.active = true;  
             }
           }
-          UpdateActiveColliders();
         }
+        UpdateActiveColliders();
       }
     }
   }
