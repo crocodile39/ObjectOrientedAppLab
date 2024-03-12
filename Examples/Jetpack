@@ -7,6 +7,7 @@ var block;
 var jetPack;
 var zaps = [];
 var missles = [];
+var coin;
 
 //Settings
 var minimumTrapTime = 2500;
@@ -17,16 +18,17 @@ var maximumTrapCount = 2;
 //Called once before the first frame
 function Start()
 {
-  var floor = Instantiate("floor", 0, 440, 320, 10, Color.black, true);
+
+  var floor = Instantiate("floor", 0, 440, 320, 10, Color.black, true, true);
   floor.AddComponent(boxCollider);
   floor.staticPosition = true;
   floor.tag = "block";
-  var roof = Instantiate("roof", 0, -1, 320, 10, Color.black, true);
+  var roof = Instantiate("roof", 0, -1, 320, 10, Color.black, true, true);
   roof.AddComponent(boxCollider);
   roof.staticPosition = true;
   roof.tag = "block";
 
-  player = Instantiate("simplePlayer", 30, 100, 30, 30, Color.blue, true);
+  player = Instantiate("player", 30, 100, 30, 30, Color.blue, true, true);
   CreateScript("PlayerScript");
   player.AddComponent(rigidBody);
   player.AddComponent(boxCollider);
@@ -35,8 +37,8 @@ function Start()
   player.variables.speed = 2;
   player.variables.jetSpeed = 0.1;
   player.variables.dead = false;
-  jetPack = Instantiate("jetPack", 30, 100, 10, 30, Color.grey, true);
-  jetPack.variables.fire = Instantiate("jetPack", 30, 100, 10, 10, Color.red, true);
+  jetPack = Instantiate("jetPack", 30, 100, 10, 30, Color.grey, true, true);
+  jetPack.variables.fire = Instantiate("jetPack", 30, 100, 10, 10, Color.red, true, true);
 
 
   scoreText = CreateText("score", "Score: " + score, -10, -15, Color.blue);
@@ -44,14 +46,14 @@ function Start()
   setProperty(loseText, "font-size", 36);
   setProperty(loseText, "hidden", true);
 
-  block = Instantiate("block", -160, 160, 20, randomNumber(45, 95), Color.yellow, true);
+  block = Instantiate("block", -160, 160, 20, randomNumber(45, 95), Color.orange, true, true);
   block.AddComponent(boxCollider);
   block.tag = "block";
   
   //Missles
-  for(var h = 0; h < 4; h++)
+  for(var h = 0; h < 3; h++)
   {
-    var missle = Instantiate("block", -160, 160, 60, 40, Color.black, false);
+    var missle = Instantiate("block", -160, 160, 60, 40, Color.black, false, true);
     missle.AddComponent(boxCollider);
     missle.tag = "block";
     missle.variables.warning = CreateText(missle.name, "!", 285, missle.transform.position.y - 75, Color.red);
@@ -65,7 +67,7 @@ function Start()
   //Zap Traps
   for(var i = 0; i < 4; i++)
   {
-    var zap = Instantiate("zap", 0, 1320, 320, 10, Color.red, false);
+    var zap = Instantiate("zap", 0, 1320, 320, 10, Color.red, false, true);
     zap.AddComponent(boxCollider);
     zap.staticPosition = true;
     zap.tag = "block";
@@ -73,21 +75,34 @@ function Start()
     appendItem(zaps, zap);
   }
   
+  
+  //Coin
+  coin = Instantiate("coin", 320, 225, 20, 20, Color.yellow, true, false);
+  coin.variables.text = CreateText("coinText", "$", -20, -2000, Color.black);
+  setProperty(coin.variables.text, "font-size", 12);
+  coin.transform.position.x = player.transform.position.x + randomNumber(450, 700);
+  coin.transform.position.y = randomNumber(35,410);
+
   Respawn();
   NewTrap();
-  
-  timedLoop(5500, function blockUpdates(){
-    if(player.transform.position.x > block.transform.position.x + 200)
-    {
-      block.transform.position.x = player.transform.position.x + randomNumber(450, 700);
-      block.transform.position.y = randomNumber(0,450 - block.transform.scale.height);
-    }
-  });
 }
 //Called every frame
 function Update()
 {  
-  // player.variables.speed += 0.001;
+  setProperty("screen1", "background-color", rgb(0, 150, 255, 0.3));
+  if(player.transform.position.x > block.transform.position.x + 200)
+  {
+    block.transform.position.x = player.transform.position.x + randomNumber(450, 700);
+    block.transform.position.y = randomNumber(0,450 - block.transform.scale.height);
+  }
+  if(player.transform.position.x > coin.transform.position.x + 200)
+  {
+    coin.transform.position.x = player.transform.position.x + randomNumber(450, 700);
+    coin.transform.position.y = randomNumber(35,410);
+  }
+  setProperty(coin.variables.text, "x", coin.transform.position.x - 184);
+  setProperty(coin.variables.text, "y", coin.transform.position.y - 99);
+
 }
 
 
@@ -122,6 +137,7 @@ function NewTrap()
   });
   
 }
+
 function MissleTrap()
 {
   var count = randomNumber(1, missles.length);
@@ -152,15 +168,22 @@ function Missle(i)
     }
   });
 }
+function ResetMissles()
+{
+  for(var i = 0; i < missles.length; i++)
+  {
+    missles[i].transform.position.x = -360;
+  }
+}
 
 function ZapTrap()
 {
-  if(Math.random() < 0.33)
+  if(Math.random() < 0.5)
   {
-    zaps[0].transform.position.y = 275;
-    zaps[1].transform.position.y = 250;
+    zaps[0].transform.position.y = 325;
+    zaps[1].transform.position.y = 275;
     zaps[2].transform.position.y = 225;
-    zaps[3].transform.position.y = 200;
+    zaps[3].transform.position.y = 175;
   }
   else
   {
@@ -191,12 +214,7 @@ function ZapTrap()
                 zaps[i].active = true;
               }
               var endZap = timedLoop(3000, function(){
-                  for(var i = 0; i < zaps.length; i++)
-                  {
-                    zaps[i].spriteRenderer.color = rgb(255, 0, 0, 0.1);
-                    zaps[i].active = false;
-                    zaps[i].transform.position.y = 1000;
-                  }
+                  EndZap();
                   stopTimedLoop(endZap);
               });
               stopTimedLoop(finishZap);
@@ -206,17 +224,42 @@ function ZapTrap()
   });
  
 }
+function EndZap()
+{
+  for(var i = 0; i < zaps.length; i++)
+  {
+    zaps[i].spriteRenderer.color = rgb(255, 0, 0, 0.1);
+    zaps[i].active = false;
+    zaps[i].transform.position.y = 1000;
+  }
+}
+
 
 function PlayerScript()
 {
   var rb = player.Rigidbody;
   UpdateJetPack(rb);
-   
-  if(player.BoxCollider.collisions.CompareTag("block") && !player.variables.dead)
+  
+  if(player.BoxCollider.collisions.count > 0 && !player.variables.dead)
   {
-    Die();
+    if(player.BoxCollider.collisions.CompareTag("block"))
+    {
+      Die();
+    }
   }
-
+  if(DistanceBetween(player, coin) < 30)
+  {
+      score += 10;
+      coin.transform.position.x = player.transform.position.x + randomNumber(450, 700);
+      coin.transform.position.y = randomNumber(0,410);
+      SetScoreTextYellow();
+      Wait(0.2, "SetScoreTextBlack");
+      Wait(0.4, "SetScoreTextYellow");
+      Wait(0.6, "SetScoreTextBlack");
+      Wait(0.8, "SetScoreTextYellow");
+      Wait(1, "SetScoreTextBlack");
+  }
+  
   camera.transform.position.x = player.transform.position.x + 50;
   score += 0.01;
   setProperty(scoreText, "text", Math.round(score));
@@ -237,6 +280,15 @@ function UpdateJetPack(rb)
     jetPack.variables.fire.transform.scale.height = Math.min(-(Math.pow(player.Rigidbody.velocity.y, 3)) - (verticalInput * 7), 15);
   }
 }
+function SetScoreTextYellow()
+{
+  setProperty(scoreText, "text-color", Color.yellow);
+}
+function SetScoreTextBlack()
+{
+  setProperty(scoreText, "text-color", Color.black);
+}
+
 function Die()
 {
   player.Rigidbody.SetVelocity(0,0);
@@ -269,7 +321,10 @@ function Respawn()
   score = 0;
   block.transform.position.x = player.transform.position.x + randomNumber(450, 700);
   block.transform.position.y = randomNumber(0,450 - block.transform.scale.height);
-  
+  coin.transform.position.x = player.transform.position.x + randomNumber(450, 700);
+  coin.transform.position.y = randomNumber(35,410);
+  EndZap();
+  ResetMissles();
   
   player.transform.position.y = 225;
   player.transform.scale.height = 30;
@@ -284,8 +339,6 @@ function SetDeadTrue()
 {
   player.variables.dead = false;
 }
-
-
 
 
 //Game Engine
@@ -417,7 +470,7 @@ function SetDeadTrue()
     var StaticGameObjects = [];
     
     //Used to create objects. Requires name, x and y position, width and height, and color.
-    function Instantiate(name, x, y, width, height, color, outline)
+    function Instantiate(name, x, y, width, height, color, outline, square)
     {
       var ngo = {}; //Holds all GameObject info
       ngo.name = name; //Name of the object
@@ -447,7 +500,7 @@ function SetDeadTrue()
       };
       
     
-      ngo.spriteRenderer = {color: color, outline: outline}; //Holds color of object
+      ngo.spriteRenderer = {color: color, outline: outline, square : square}; //Holds color of object
       appendItem(GameObjects, ngo);
       DrawObject(ngo);
       ngo.variables = {};
@@ -730,7 +783,14 @@ function SetDeadTrue()
           setStrokeColor(go.spriteRenderer.color);
         }
         setFillColor(go.spriteRenderer.color);
-        rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+        if(go.spriteRenderer.square)
+        {
+          rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+        }
+        else
+        {
+            circle(go.transform.scale.width / 2, go.transform.scale.width / 2, go.transform.scale.width / 2);
+        }
       }
     }
   }
@@ -973,7 +1033,7 @@ function SetDeadTrue()
   //Camera
   {
     var cameraOffset = {x: 160, y: 200}; //Constant used to center camera
-    var camera = Instantiate("camera", cameraOffset.x,cameraOffset.y,0,0,"black"); //Create a object to be used as a camera
+    var camera = Instantiate("camera", cameraOffset.x,cameraOffset.y,0,0,"black", false, true); //Create a object to be used as a camera
     
     //Engine Function
     {
@@ -1222,7 +1282,14 @@ function SetDeadTrue()
             setStrokeColor(go.spriteRenderer.color);
           }
           setFillColor(go.spriteRenderer.color);
-          rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+          if(go.spriteRenderer.square)
+          {
+            rect(0, 0, go.transform.scale.width, go.transform.scale.height);
+          }
+          else
+          {
+            circle(go.transform.scale.width / 2, go.transform.scale.width / 2, go.transform.scale.width / 2);
+          }
         }
       }
       
