@@ -14,8 +14,6 @@ var addVelocity = velocity;
 
 var apple;
 
-// var test;
-
 //Called once before the first frame
 function Start()
 {
@@ -37,20 +35,16 @@ function Start()
       appendItem(tilePoints, point);
     }
   }
-  
-  // test = Instantiate("test", tilePoints[25].x, tilePoints[25].y, 2, 2, Color.black, false, false);
-  
 
   player = Instantiate("player", tilePoints[currentPoint].x - 15, tilePoints[currentPoint].y - 15, 30, 30, Color.blue, true, false);
   player.variables.speed = 1;
   
   for(var k = 0; k < startingSize; k++)
   {
-    var part = Instantiate("player", tilePoints[currentPoint - (k + 1)].x - 15, tilePoints[currentPoint - (k + 1)].y - 15, 30, 30, Color.blue, true, false);
+    var part = Instantiate("part", tilePoints[currentPoint - (k + 1)].x - 15, tilePoints[currentPoint - (k + 1)].y - 15, 30, 30, Color.blue, true, false);
     appendItem(playerParts, part);
     appendItem(partVelocities, velocity);
-    console.log(currentPoint - (k + 1));
-    appendItem(partPoints, currentPoint - (k + 1));
+    appendItem(partPoints, currentPoint - (k ));
   }
 
   apple = Instantiate("apple", tilePoints[26].x - 10, tilePoints[26].y - 10, 20, 20, Color.red, true, false);
@@ -119,9 +113,6 @@ function GetNextPoint()
   {
     nextPoint = currentPoint - 7;
   }
-
-  // test.transform.position.x = tilePoints[nextPoint].x;
-  // test.transform.position.y = tilePoints[nextPoint].y;
 }
 
 function ApplyVelocity()
@@ -150,8 +141,6 @@ function CascadeVelocities()
 }
 function CascadePoints()
 {
-  // playerParts[0].transform.position.x = tilePoints[partPoints[0]].x - 15;
-  // playerParts[0].transform.position.y = tilePoints[partPoints[0]].y - 15;
   for(var h = 1; h < playerParts.length; h++)
   {
     playerParts[h].transform.position.x = tilePoints[partPoints[h]].x - 15;
@@ -161,14 +150,14 @@ function CascadePoints()
   {
     partPoints[0] = currentPoint;
     addPoint = partPoints[partPoints.length - 1];
-    // test.transform.position.x = tilePoints[addPoint].x;
-    // test.transform.position.y = tilePoints[addPoint].y;
-  
+ 
     for(var i = partPoints.length - 1; i > 0; i--)
     {
       partPoints[i] = partPoints[i - 1];
     }
   }
+  playerParts[0].transform.position.x = tilePoints[partPoints[0]].x - 15;
+  playerParts[0].transform.position.y = tilePoints[partPoints[0]].y - 15;
 }
 
 function GetInput()
@@ -225,7 +214,6 @@ function TouchingApple()
 {
   return  DistanceToPoint(apple.variables.point) <= 20;
 }
-
 function AddToSnake()
 {
   var part = Instantiate("player", tilePoints[addPoint].x - 15, tilePoints[addPoint].y - 15, 30, 30, Color.blue, true, false);
