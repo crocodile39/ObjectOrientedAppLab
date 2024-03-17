@@ -1,7 +1,7 @@
 var player;
 var velocity = {x : 1, y : 0};
 var tilePoints = [];
-var currentPoint = 12;
+var currentPoint = 24;
 var nextPoint = 25;
 var maxDistance = 1.5;
 
@@ -13,9 +13,6 @@ var addPoint = 23;
 var addVelocity = velocity;
 
 var apple;
-
-
-var size = 5;
 
 // var test;
 
@@ -31,14 +28,12 @@ function Start()
   InstantiateStatic(10, 365, 300, 10, Color.black);
 
   //Tiles
-  for(var i = 0; i < size; i++)
+  for(var i = 0; i < 7; i++)
   {
-    for(var j = 0; j < size; j++)
+    for(var j = 0; j < 7; j++)
     {
-      // InstantiateStatic(20 + (j * 40), 85+ (i * 40), 40, 40, Color.green);
-      var tileSize = 280 / size;
-      InstantiateStatic(20 + (j * tileSize), 85+ (i * tileSize), tileSize, tileSize, Color.green);
-      var point = {x : 20 + (j * tileSize) + 20, y : 85+ (i * tileSize) + 20};
+      InstantiateStatic(20 + (j * 40), 85+ (i * 40), 40, 40, Color.green);
+      var point = {x : 20 + (j * 40) + 20, y : 85+ (i * 40) + 20};
       appendItem(tilePoints, point);
     }
   }
@@ -46,23 +41,20 @@ function Start()
   // test = Instantiate("test", tilePoints[25].x, tilePoints[25].y, 2, 2, Color.black, false, false);
   
 
-  player = Instantiate("player", 145, 210, 30, 30, Color.blue, true, false);
-  player.AddComponent(boxCollider);
-  player.AddComponent(rigidBody);
-  player.Rigidbody.useGravity = false;
-  player.variables.speed = 1.3;
+  player = Instantiate("player", tilePoints[currentPoint].x - 15, tilePoints[currentPoint].y - 15, 30, 30, Color.blue, true, false);
+  player.variables.speed = 1;
   
   for(var k = 0; k < startingSize; k++)
   {
     var part = Instantiate("player", tilePoints[currentPoint - (k + 1)].x - 15, tilePoints[currentPoint - (k + 1)].y - 15, 30, 30, Color.blue, true, false);
     appendItem(playerParts, part);
     appendItem(partVelocities, velocity);
+    console.log(currentPoint - (k + 1));
     appendItem(partPoints, currentPoint - (k + 1));
   }
 
-  var appleSpawn = 13;
-  apple = Instantiate("apple", tilePoints[appleSpawn].x - 10, tilePoints[appleSpawn].y - 10, 20, 20, Color.red, true, false);
-  apple.variables.point = appleSpawn;
+  apple = Instantiate("apple", tilePoints[26].x - 10, tilePoints[26].y - 10, 20, 20, Color.red, true, false);
+  apple.variables.point = 26;
   velocity = GetInput();
   ApplyVelocity();
   addPoint = 23;
@@ -137,8 +129,7 @@ function ApplyVelocity()
   CascadePoints();
   currentPoint = nextPoint;
   
-  player.Rigidbody.velocity.x = velocity.x * player.variables.speed;
-  player.Rigidbody.velocity.y = velocity.y * player.variables.speed;
+  player.transform.Move(velocity.x * player.variables.speed, velocity.y * player.variables.speed);
   for(var i = 0; i < playerParts.length; i++)
   {
     playerParts[i].transform.Move(partVelocities[i + 1].x * player.variables.speed, partVelocities[i + 1].y * player.variables.speed);
@@ -159,6 +150,13 @@ function CascadeVelocities()
 }
 function CascadePoints()
 {
+  // playerParts[0].transform.position.x = tilePoints[partPoints[0]].x - 15;
+  // playerParts[0].transform.position.y = tilePoints[partPoints[0]].y - 15;
+  for(var h = 1; h < playerParts.length; h++)
+  {
+    playerParts[h].transform.position.x = tilePoints[partPoints[h]].x - 15;
+    playerParts[h].transform.position.y = tilePoints[partPoints[h]].y - 15;
+  }
   if(currentPoint >= 0 && currentPoint <= tilePoints.length  -1)
   {
     partPoints[0] = currentPoint;
@@ -358,15 +356,15 @@ function Lose()
     {
       DetermineInputValues();
       Update();
-      CheckScripts();
+      // CheckScripts();
       if(updateColors)
       {
         UpdateColors();
       }
-      ApplyCameraPosition();
-      ApplyCollisions();
-      ApplyGravity();
-      ApplyVelocities();
+      // ApplyCameraPosition();
+      // ApplyCollisions();
+      // ApplyGravity();
+      // ApplyVelocities();
       ApplyMoves();
       ApplyPositions();
     }
@@ -374,10 +372,10 @@ function Lose()
     //Called less often than draw() for function that aren't as important
     function slowDraw()
     {
-      if(turnOffNonVisible)
-      {
-        TurnOffNonVisible();
-      }
+      // if(turnOffNonVisible)
+      // {
+      //   TurnOffNonVisible();
+      // }
     }
   }
   
