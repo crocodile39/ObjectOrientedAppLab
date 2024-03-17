@@ -926,18 +926,18 @@ function Lose()
         for(var i = 0; i < GameObjects.length; i++)
         {
           var go = GameObjects[i];
-          if(go.active)
-          {
+          // if(go.active)
+          // {
             setPosition(go.name, go.transform.position.x, go.transform.position.y);
-            var goCol = go.BoxCollider;
-            if(goCol != null)
-            {
-              goCol.x = go.transform.position.x;
-              goCol.y = go.transform.position.y;
-              goCol.width = go.transform.scale.width;
-              goCol.height = go.transform.scale.height;
-            }
-          }
+            // var goCol = go.BoxCollider;
+            // if(goCol != null)
+            // {
+            //   goCol.x = go.transform.position.x;
+            //   goCol.y = go.transform.position.y;
+            //   goCol.width = go.transform.scale.width;
+            //   goCol.height = go.transform.scale.height;
+            // }
+          // }
           
         }
       }
@@ -947,7 +947,7 @@ function Lose()
   //Camera
   {
     var cameraOffset = {x: 160, y: 200}; //Constant used to center camera
-    var camera = Instantiate("camera", cameraOffset.x,cameraOffset.y,0,0,"black", false, true); //Create a object to be used as a camera
+    // var camera = Instantiate("camera", cameraOffset.x,cameraOffset.y,0,0,"black", false, true); //Create a object to be used as a camera
     
     //Engine Function
     {
@@ -1175,9 +1175,9 @@ function Lose()
 
   //Optional Functions
   {
-    var updateColors = true; //Whether or not to update colors every frame
+    var updateColors = false; //Whether or not to update colors every frame
     
-    var turnOffNonVisible = true; //Turn off colliders when they are off screen, then turn them back on when they are on screen again
+    var turnOffNonVisible = false; //Turn off colliders when they are off screen, then turn them back on when they are on screen again
     var cameraTurnOffDistance = 250; //Distance from camera to turn off objects
     
     //Engine Functions
@@ -1379,7 +1379,7 @@ function Lose()
     Start();
     var fixedTime = 5; //How often draw function is called
     timedLoop(fixedTime, function(){draw();});
-    var slowTime = 500; //How often slowDraw function is called
-    timedLoop(slowTime, function(){slowDraw();});
+    // var slowTime = 500; //How often slowDraw function is called
+    // timedLoop(slowTime, function(){slowDraw();});
   }
 }
