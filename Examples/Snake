@@ -1,19 +1,21 @@
 var player;
 var velocity = {x : 1, y : 0};
 var tilePoints = [];
-var currentPoint = 24;
-var nextPoint = 25;
+var currentPoint = 14;
+var nextPoint = 15;
 var maxDistance = 1.5;
 
-var startingSize = 2;
+var startingSize = 1;
 var playerParts = [];
 var partVelocities = [velocity];
 var partPoints = [];
-var addPoint = 23;
+var addPoint = 14;
 var addVelocity = velocity;
 var previousVelocity = {x : 1, y : 0};
 
 var apple;
+
+var mapSize = 4;
 
 //Called once before the first frame
 function Start()
@@ -27,15 +29,22 @@ function Start()
   InstantiateStatic(10, 365, 300, 10, Color.black);
 
   //Tiles
-  for(var i = 0; i < 7; i++)
+  for(var i = 0; i < mapSize; i++)
   {
-    for(var j = 0; j < 7; j++)
+    for(var j = 0; j < mapSize; j++)
     {
-      InstantiateStatic(20 + (j * 40), 85+ (i * 40), 40, 40, Color.green);
-      var point = {x : 20 + (j * 40) + 20, y : 85+ (i * 40) + 20};
+      var scale = 280 / mapSize;
+      InstantiateStatic(20 + (j * scale), 85+ (i * scale), scale, scale, Color.green);
+      var point = {x : 20 + (j * scale) + (scale / 2), y : 85+ (i * scale) + (scale / 2)};
       appendItem(tilePoints, point);
     }
   }
+  
+  currentPoint = Math.round(mapSize * (mapSize / 2) - 0.1);
+  nextPoint = currentPoint + 1;
+  addPoint = currentPoint - 1;
+  var applePoint = nextPoint + 1;
+  
 
   player = Instantiate("player", tilePoints[currentPoint].x - 15, tilePoints[currentPoint].y - 15, 30, 30, Color.blue, true, false);
   player.variables.speed = 1;
@@ -48,11 +57,11 @@ function Start()
     appendItem(partPoints, currentPoint - (k ));
   }
 
-  apple = Instantiate("apple", tilePoints[26].x - 10, tilePoints[26].y - 10, 20, 20, Color.red, true, false);
-  apple.variables.point = 26;
+  apple = Instantiate("apple", tilePoints[applePoint].x - 10, tilePoints[applePoint].y - 10, 20, 20, Color.red, true, false);
+  apple.variables.point = applePoint;
   velocity = GetInput();
   ApplyVelocity();
-  addPoint = 23;
+  // addPoint = 14;
 }
 
 //Called every frame
@@ -110,11 +119,11 @@ function GetNextPoint()
   }
   else if(velocity.y > 0)
   {
-    nextPoint = currentPoint + 7;
+    nextPoint = currentPoint + mapSize;
   }
   else if(velocity.y < 0)
   {
-    nextPoint = currentPoint - 7;
+    nextPoint = currentPoint - mapSize;
   }
 }
 
@@ -159,8 +168,11 @@ function CascadePoints()
       partPoints[i] = partPoints[i - 1];
     }
   }
-  playerParts[0].transform.position.x = tilePoints[partPoints[0]].x - 15;
-  playerParts[0].transform.position.y = tilePoints[partPoints[0]].y - 15;
+  if(playerParts.length > 1)
+  {
+    playerParts[0].transform.position.x = tilePoints[partPoints[0]].x - 15;
+    playerParts[0].transform.position.y = tilePoints[partPoints[0]].y - 15;
+  }
 }
 
 function GetInput()
@@ -236,23 +248,23 @@ function Lose()
     }
   }
   //Up Check
-  if(currentPoint <= 6 && velocity.y == -1)
+  if(currentPoint <= (mapSize - 1) && velocity.y == -1)
   {
     return true;
   }
   //Down Check
-  if(currentPoint >= 42 && velocity.y == 1)
+  if(currentPoint >= (mapSize * (mapSize - 1)) && velocity.y == 1)
   {
     return true;
   }
   
   //Left Check
-  if(currentPoint % 7 == 0 && (nextPoint + 1) % 7 == 0)
+  if(currentPoint % mapSize == 0 && (nextPoint + 1) % mapSize == 0)
   {
     return true;
   }
   //Right Check
-  if((currentPoint + 1) % 7 == 0 && nextPoint % 7 == 0)
+  if((currentPoint + 1) % mapSize == 0 && nextPoint % mapSize == 0)
   {
     return true;
   }
