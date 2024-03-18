@@ -1,13 +1,17 @@
-var snake = CreateSprite("New-Piskel.png", 300);
-
-snake.lookAround = ["New-Piskel.png", "New-Piskel-2.png.png", "New-Piskel-3.png.png", "New-Piskel-4.png.png", "New-Piskel-5.png.png"];                               
-PlayAnimation(snake.name, snake.lookAround, 1);
+var test = CreateSprite("icon://fa-volume-off", 300);
+var testAnim = ["icon://fa-volume-off", "icon://fa-volume-down", "icon://fa-volume-up"];                               
+PlayAnimation(test, testAnim, 0.75);
+timedLoop(750, function()
+{
+  PlayAnimation(test, testAnim, 0.75);
+});
 
 //Makes an image on screen, return an object with a name.
 function CreateSprite(picture, size)
 {
   var name = randomNumber(0,10000) + "newSprite" + randomNumber(0,10000);
-  var sprite = {name : name};
+  // var sprite = {name : name};
+  var sprite = name;
   image(name, picture);
   setProperty(name, "width", size);
   setProperty(name, "height", size);
@@ -33,7 +37,7 @@ function PlayAnimation(sprite, anim, length)
        {
           setProperty(sprite, "image", anim[0]);
        }
-        setProperty(sprite, "image", anim[index]);
+       setProperty(sprite, "image", anim[index]);
      }
      index++;
    });
