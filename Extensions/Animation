@@ -1,0 +1,40 @@
+var snake = CreateSprite("New-Piskel.png", 300);
+
+snake.lookAround = ["New-Piskel.png", "New-Piskel-2.png.png", "New-Piskel-3.png.png", "New-Piskel-4.png.png", "New-Piskel-5.png.png"];                               
+PlayAnimation(snake.name, snake.lookAround, 1);
+
+//Makes an image on screen, return an object with a name.
+function CreateSprite(picture, size)
+{
+  var name = randomNumber(0,10000) + "newSprite" + randomNumber(0,10000);
+  var sprite = {name : name};
+  image(name, picture);
+  setProperty(name, "width", size);
+  setProperty(name, "height", size);
+  setProperty(name, "fit", "fill");
+  return sprite;
+}
+//Iterates through the anim array to show pictures in order with time inbetween them to show an animation
+function PlayAnimation(sprite, anim, length)
+{
+   length *= 1000;
+   length /= anim.length;
+   var index = 1;
+   var playAnim = timedLoop(length, function()
+   {
+     if(index >= anim.length)
+     {
+        setProperty(sprite, "image", anim[0]);
+        stopTimedLoop(playAnim);
+     }
+     else
+     {
+       if(index - 1 >= 0)
+       {
+          setProperty(sprite, "image", anim[0]);
+       }
+        setProperty(sprite, "image", anim[index]);
+     }
+     index++;
+   });
+}
