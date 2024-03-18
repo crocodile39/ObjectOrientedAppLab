@@ -19,6 +19,9 @@ var mapSize = 6;
 var playerSize = 30;
 var appleSize = 20;
 
+// var pointsText;
+var points = (startingSize + 1);
+
 //Called once before the first frame
 function Start()
 {
@@ -50,7 +53,7 @@ function Start()
   playerSize = 210 / mapSize;
 
   player = Instantiate("player", tilePoints[currentPoint].x - (playerSize / 2), tilePoints[currentPoint].y - (playerSize / 2), playerSize, playerSize, Color.blue, true, false);
-  player.variables.speed = 1;
+  player.variables.speed = 1.2;
   
   for(var k = 0; k < startingSize; k++)
   {
@@ -66,7 +69,6 @@ function Start()
   apple.variables.point = applePoint;
   velocity = GetInput();
   ApplyVelocity();
-  // addPoint = 14;
 }
 
 //Called every frame
@@ -80,8 +82,18 @@ function Update()
   }
   if(TouchingApple())
   {
+    points++;
+    setProperty("scoreText", "text", points);
     AddToSnake();
-    RandomApplePosition();
+    if(points == (mapSize * mapSize))
+    {
+      console.log("WIN");
+      player.variables.speed = 0;
+    }
+    else
+    {
+      RandomApplePosition();
+    }
   }
   if(Lose())
   {
@@ -236,7 +248,7 @@ function TouchingApple()
 }
 function AddToSnake()
 {
-  var part = Instantiate("player", tilePoints[addPoint].x - (playerSize / 2), tilePoints[addPoint].y - (playerSize / 2), playerSize, playerSize, Color.blue, true, false);
+  var part = Instantiate("part", tilePoints[addPoint].x - (playerSize / 2), tilePoints[addPoint].y - (playerSize / 2), playerSize, playerSize, Color.blue, true, false);
   appendItem(playerParts, part);
   appendItem(partVelocities, addVelocity);
   appendItem(partPoints, addPoint);
@@ -708,7 +720,7 @@ function Lose()
       //Creates a canvas and draws an object on it
       function DrawObject(go)
       {
-        go.name = go.name + randomNumber(0, 100000);
+        go.name = randomNumber(0, 100000) + go.name + randomNumber(0, 100000);
         createCanvas(go.name);
         setActiveCanvas(go.name);
         setPosition(go.name,go.transform.position.x, go.transform.position.y);
@@ -1013,7 +1025,7 @@ function Lose()
     var dHeldFirst = true;
     
     //Checks for inputs
-    onEvent("screen1", "keyup", function (keys) {
+    onEvent("gameScreen", "keyup", function (keys) {
       if(keys.key == "w")
       {
        heldDownW = false;
@@ -1023,7 +1035,7 @@ function Lose()
        heldDownS = false;
       }
     });
-    onEvent("screen1", "keydown", function (keys) {
+    onEvent("gameScreen", "keydown", function (keys) {
       if(keys.key == "w")
       {
         if(!heldDownS)
@@ -1047,7 +1059,7 @@ function Lose()
         heldDownS = true;
       }
     });
-    onEvent("screen1", "keyup", function (keys) {
+    onEvent("gameScreen", "keyup", function (keys) {
       if(keys.key == "d")
       {
        heldDownD = false;
@@ -1057,7 +1069,7 @@ function Lose()
        heldDownA = false;
       }
     });
-    onEvent("screen1", "keydown", function (keys) {
+    onEvent("gameScreen", "keydown", function (keys) {
       if(keys.key == "d")
       {
         if(!heldDownA)
@@ -1127,7 +1139,7 @@ function Lose()
     var KeyStates = {q: false, w: false, e: false,r: false,t: false,y: false,u: false,i: false,o: false,p: false,a: false,s: false,d: false,f: false,g: false,h: false,j: false,k: false,l: false,z: false,x: false,c: false,v: false,b: false,n: false,m: false, up: false, right: false, down: false, left: false};
     
     //Checks for inputs
-    onEvent("screen1", "keydown", function (keys) {
+    onEvent("gameScreen", "keydown", function (keys) {
       KeyStates.q = keys.key == "q";
       KeyStates.w = keys.key == "w";
       KeyStates.e = keys.key == "e";
@@ -1159,7 +1171,7 @@ function Lose()
       KeyStates.down = keys.key == "down";
       KeyStates.left = keys.key == "left";
     });
-    onEvent("screen1", "keyup", function (keys) {
+    onEvent("gameScreen", "keyup", function (keys) {
       KeyStates.q = !keys.key == "q";
       KeyStates.w = !keys.key == "w";
       KeyStates.e = !keys.key == "e";
@@ -1294,7 +1306,7 @@ function Lose()
     //Sets background color to inputed color
     function SetBackground(color)
     {
-      setProperty("screen1", "background-color", color);
+      setProperty("gameScreen", "background-color", color);
     }
     
     //Creates a simple player object
